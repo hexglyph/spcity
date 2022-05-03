@@ -1,4 +1,4 @@
-import what3words from '@what3words/api';
+//import what3words from '@what3words/api';
 
 let map: google.maps.Map;
 
@@ -21,7 +21,7 @@ function initMap(): void {
       const sw = map.getBounds().getSouthWest();
 
       // Call the what3words Grid API to obtain the grid squares within the current visble bounding box
-      what3words.api
+      /*what3words.api
         .gridSectionGeoJson({
           southwest: {
             lat: sw.lat(),
@@ -40,7 +40,7 @@ function initMap(): void {
           }
           gridData = map.data.addGeoJson(data);
         })
-        .catch(console.error);
+        .catch(console.error);*/
     }
 
     // Set the grid display style
