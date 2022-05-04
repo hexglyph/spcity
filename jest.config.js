@@ -1,3 +1,6 @@
+/* eslint-disable linebreak-style */
+/* eslint-disable max-len */
+
 const nextJest = require('next/jest');
 
 const createJestConfig = nextJest({
