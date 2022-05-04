@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router';
 import Script from 'next/script';
-
 import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
 
@@ -27,13 +26,12 @@ export default function Index() {
       >
         <div>
           <div id="wrapper">
-            {/* prettier-ignore */}
             <what3words-autosuggest
               id="autosuggest"
               api_key={process.env.NEXT_PUBLIC_API_KEY_WORD}
             >
-              {/* prettier-ignore */}
-              <input type="text" />
+              <label htmlFor="w3w">what3words address (optional):</label>
+              <input name="w3w" type="text" />
             </what3words-autosuggest>
             <div id="map"></div>
           </div>
