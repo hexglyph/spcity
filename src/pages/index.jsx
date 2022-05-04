@@ -2,10 +2,23 @@
 /* eslint-disable import/extensions */
 import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
+import Script from 'next/script';
 
 export default function Index() {
   return (
     <div>
+      <Script
+            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}
+          />
+      <Script src='/assets/js/googlemaps.js' />
+      <Script
+        type="module"
+        src="https://cdn.what3words.com/javascript-components@4-latest/dist/what3words/what3words.esm.js"
+      ></Script>
+      <Script
+        noModule
+        src={`https://cdn.what3words.com/javascript-components@4-latest/dist/what3words/what3words.js?key=${process.env.NEXT_PUBLIC_API_KEY_WORD}`}
+      ></Script>
       <Main
         meta={
           <Meta
