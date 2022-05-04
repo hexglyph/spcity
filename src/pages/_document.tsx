@@ -10,7 +10,10 @@ class MyDocument extends Document {
   render() {
     return (
       <Html lang={AppConfig.locale}>
-        <Script
+        
+        <Head />
+        <body>
+          <Script
           strategy='beforeInteractive'
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}
           />
@@ -25,8 +28,6 @@ class MyDocument extends Document {
         noModule
         src={`https://cdn.what3words.com/javascript-components@4-latest/dist/what3words/what3words.js?key=${process.env.NEXT_PUBLIC_API_KEY_WORD}`}
       ></Script>
-        <Head />
-        <body>
           <Main />
           <NextScript />
         </body>

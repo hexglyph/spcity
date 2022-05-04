@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 export const AppConfig = {
   site_name: 'Starter',
   title: 'Nextjs Starter',

@@ -1,15 +1,11 @@
-import { useRouter } from 'next/router';
-import Script from 'next/script';
+/* eslint-disable linebreak-style */
+/* eslint-disable import/extensions */
 import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
 
 export default function Index() {
-  const router = useRouter();
-
   return (
     <div>
-      
-      
       <Main
         meta={
           <Meta
@@ -24,15 +20,11 @@ export default function Index() {
               id="autosuggest"
               api_key={process.env.NEXT_PUBLIC_API_KEY_WORD}
             >
-              <label htmlFor="w3w">what3words address (optional):</label>
+              <label htmlFor="w3w">Endereço:</label>
               <input name="w3w" type="text" />
             </what3words-autosuggest>
             <div id="map"></div>
           </div>
-        </div>
-        <div>
-          
-          
         </div>
       </Main>
     </div>
