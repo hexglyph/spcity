@@ -8,14 +8,8 @@ export default function Index() {
 
   return (
     <div>
-      <Script
-        type="module"
-        src="https://cdn.what3words.com/javascript-components@4-latest/dist/what3words/what3words.esm.js"
-      ></Script>
-      <Script
-        noModule
-        src={`https://cdn.what3words.com/javascript-components@4-latest/dist/what3words/what3words.js?key=${process.env.NEXT_PUBLIC_API_KEY_WORD}`}
-      ></Script>
+      
+      
       <Main
         meta={
           <Meta
@@ -37,10 +31,8 @@ export default function Index() {
           </div>
         </div>
         <div>
-          <Script
-            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}
-          />
-          <Script strategy="afterInteractive" src={`${router.basePath}/assets/js/googlemaps.js`} />
+          
+          
         </div>
       </Main>
     </div>
