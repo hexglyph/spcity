@@ -19,6 +19,7 @@ export default function Index() {
         noModule
         src={`https://cdn.what3words.com/javascript-components@4-latest/dist/what3words/what3words.js?key=${process.env.NEXT_PUBLIC_API_KEY_WORD}`}
       ></Script>
+      <Script src='/assets/js/wordsgrid.js' />
       <Main
         meta={
           <Meta
