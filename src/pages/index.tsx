@@ -40,7 +40,7 @@ export default function Index() {
           <Script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}
           />
-          <Script strategy="afterInteractive" src="/assets/js/googlemaps.js" />
+          <Script strategy="afterInteractive" src={`${router.basePath}/assets/js/googlemaps.js`} />
         </div>
       </Main>
     </div>
