@@ -27,10 +27,12 @@ export default function Index() {
       >
         <div>
           <div id="wrapper">
+            {/* prettier-ignore */}
             <what3words-autosuggest
               id="autosuggest"
               api_key={process.env.NEXT_PUBLIC_API_KEY_WORD}
             >
+              {/* prettier-ignore */}
               <input type="text" />
             </what3words-autosuggest>
             <div id="map"></div>

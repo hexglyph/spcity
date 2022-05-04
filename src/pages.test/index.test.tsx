@@ -9,7 +9,7 @@ describe('Index page', () => {
   describe('Render method', () => {
     it('should have h1 tag', () => {
       render(<Index />);
-
+      {/* prettier-ignore */}
       const heading = screen.getByRole('heading', {
         name: /Boilerplate code/,
       });
