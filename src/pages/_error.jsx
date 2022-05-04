@@ -3,7 +3,6 @@
 
 import Error from 'next/error';
 
-
 function Page({ statusCode }) {
   return <Error statusCode={statusCode}></Error>;
 }
