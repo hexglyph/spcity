@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 /* eslint-disable no-shadow */
 /* eslint-disable linebreak-style */
 /* eslint-disable object-shorthand */
@@ -5,8 +6,6 @@
 /* eslint-disable max-len */
 /* eslint-disable indent */
 // Create the Google Map
-let map;
-
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
   infoWindow.setPosition(pos);
   infoWindow.setContent(
@@ -17,11 +16,12 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
   infoWindow.open(map);
 }
 
-map = new google.maps.Map(document.getElementById('map'), {
+const map = new google.maps.Map(document.getElementById('map'), {
   center: { lat: 51.52086, lng: -0.195499 },
   zoom: 13,
   mapTypeId: 'roadmap',
 });
+
 const infoWindow = new google.maps.InfoWindow();
 if (navigator.geolocation) {
 navigator.geolocation.getCurrentPosition(
