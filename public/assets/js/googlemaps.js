@@ -5,7 +5,6 @@
 /* eslint-disable max-len */
 /* eslint-disable indent */
 // Create the Google Map
-let infoWindow;
 let map;
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
@@ -18,67 +17,63 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
   infoWindow.open(map);
 }
 
-function initMap() {
-      map = new google.maps.Map(document.getElementById('map'), {
-        center: { lat: 51.52086, lng: -0.195499 },
-        zoom: 13,
-        mapTypeId: 'roadmap',
+map = new google.maps.Map(document.getElementById('map'), {
+  center: { lat: 51.52086, lng: -0.195499 },
+  zoom: 13,
+  mapTypeId: 'roadmap',
+});
+const infoWindow = new google.maps.InfoWindow();
+if (navigator.geolocation) {
+navigator.geolocation.getCurrentPosition(
+  (position) => {
+    const pos = {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+    };
+
+    infoWindow.setPosition(pos);
+    infoWindow.setContent('Location found.');
+    infoWindow.open(map);
+    map.setCenter(pos);
+  },
+  () => {
+    handleLocationError(true, infoWindow, map.getCenter());
+  },
+);
+} else {
+// Browser doesn't support Geolocation
+handleLocationError(false, infoWindow, map.getCenter());
+}
+let markers = [];
+
+const autosuggest = document.getElementById('autosuggest');
+autosuggest.addEventListener('selected_suggestion', (value) => {
+  // console.log('[EVENT:select]', value.detail.suggestion.words);
+
+  // Call the what3words convert to coordinates API to obtain the latitude and longitude of the three word address provided
+  what3words.api.convertToCoordinates(value.detail.suggestion.words).then((response) => {
+    // console.log('[convertToCoordinates]', response);
+    if (response.coordinates) {
+      // Clear out the old markers.
+      markers.forEach((marker) => {
+        marker.setMap(null);
       });
-      infoWindow = new google.maps.InfoWindow();
-      if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
+      markers = [];
 
-          infoWindow.setPosition(pos);
-          infoWindow.setContent('Location found.');
-          infoWindow.open(map);
-          map.setCenter(pos);
-        },
-        () => {
-          handleLocationError(true, infoWindow, map.getCenter());
-        },
-      );
-    } else {
-      // Browser doesn't support Geolocation
-      handleLocationError(false, infoWindow, map.getCenter());
-    }
-      let markers = [];
+      const latLng = { lat: response.coordinates.lat, lng: response.coordinates.lng };
 
-      const autosuggest = document.getElementById('autosuggest');
-      autosuggest.addEventListener('selected_suggestion', (value) => {
-        // console.log('[EVENT:select]', value.detail.suggestion.words);
-
-        // Call the what3words convert to coordinates API to obtain the latitude and longitude of the three word address provided
-        what3words.api.convertToCoordinates(value.detail.suggestion.words).then((response) => {
-          // console.log('[convertToCoordinates]', response);
-          if (response.coordinates) {
-            // Clear out the old markers.
-            markers.forEach((marker) => {
-              marker.setMap(null);
-            });
-            markers = [];
-
-            const latLng = { lat: response.coordinates.lat, lng: response.coordinates.lng };
-
-            // Create a marker for the location
-            const marker = new google.maps.Marker({
-              position: latLng,
-              map: map,
-              title: value.detail.suggestion.words,
-              icon: 'https://map.what3words.com/map/marker.png',
-            });
-            markers.push(marker);
-
-            // Center the map on that location, and zoom in on it
-            map.setCenter(latLng);
-            map.setZoom(20);
-          }
-        });
+      // Create a marker for the location
+      const marker = new google.maps.Marker({
+        position: latLng,
+        map: map,
+        title: value.detail.suggestion.words,
+        icon: 'https://map.what3words.com/map/marker.png',
       });
-    }
+      markers.push(marker);
 
-initMap();
+      // Center the map on that location, and zoom in on it
+      map.setCenter(latLng);
+      map.setZoom(20);
+    }
+  });
+});
