@@ -6,6 +6,7 @@
 /* eslint-disable indent */
 // Create the Google Map
 let infoWindow;
+let map;
 
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
   infoWindow.setPosition(pos);
@@ -18,7 +19,7 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
 }
 
 function initMap() {
-      const map = new google.maps.Map(document.getElementById('map'), {
+      map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 51.52086, lng: -0.195499 },
         zoom: 13,
         mapTypeId: 'roadmap',
