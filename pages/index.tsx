@@ -9,7 +9,10 @@ import { Navbar } from "../components/Navbar";
 import GoogleMap from "../components/Map";
 import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
 import WhatForm from "../components/WhatForm";
-
+import {PrismaClient} from '@prisma/client'
+const prisma = new PrismaClient({
+  datasources: { db: { url: process.env.DATABASE_URL } }
+})
 
 
 export const getServerSideProps: GetServerSideProps = async () => {
