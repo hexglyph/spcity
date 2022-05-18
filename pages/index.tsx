@@ -6,10 +6,9 @@ import { GetServerSideProps } from "next"
 import Layout from "../components/Layout"
 import Post, { PostProps } from "../components/Post"
 import { Navbar } from "../components/Navbar";
-import GoogleMap from "../components/Map";
+import GoogleMapApp from "../components/Map";
 import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
 import WhatForm from "../components/WhatForm";
-import Script from "next/script";
 
 
 export const getServerSideProps: GetServerSideProps = async () => {
@@ -33,9 +32,10 @@ const Home: React.FC<Props> = (props) => {
     <Layout>
       <Head>
         <title>Home</title>
-        <Script
+        <script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}
-          />
+            async
+          ></script>
       </Head>
       <Navbar title={""} icon={""}/>
       <div className="page">
@@ -43,10 +43,10 @@ const Home: React.FC<Props> = (props) => {
         <main className={`flex w-full h-auto`}>
           
           <div className={`relative flex flex-col w-full min-h-[600px] md:w-3/5`}>
-            
-            <div id="map" className="flex flex-col w-full h-full grow">
-              <GoogleMap />
-            </div>
+            <GoogleMapApp />
+            {/*<div id="map" className="flex flex-col w-full h-full grow">
+              <GoogleMapApp />
+            </div>*/}
             
             
             

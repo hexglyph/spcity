@@ -1,11 +1,37 @@
-import Reach, { useState, useEffect, useRef } from "react";
+import Reach, { useState, useEffect, useRef, useCallback } from "react";
 import {  GridSectionClient, GridSectionOptions, GridSectionGeoJsonResponse, AvailableLanguagesClient } from "@what3words/api";
 import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
 
-export default function GoogleMap() {
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+
+const containerStyle = {
+  width: '400px',
+  height: '400px'
+};
+const center = {
+  lat: -23.54748429489416,
+  lng: -46.637100424385785
+};
+
+export default function GoogleMapApp() {
   const [value, setValue] = useState("");
   const onChange = (e) => setValue(e.target.value);
   const mapRef = useRef(null);
+
+  //googlemaps api
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_API_KEY_MAPS
+  })
+  const [map, setMap] = useState(null)
+  const onLoad = useCallback(function callback(map) {
+    const bounds = new window.google.maps.LatLngBounds(center);
+    map.fitBounds(bounds);
+    setMap(map)
+  }, [])
+  const onUnmount = useCallback(function callback(map) {
+    setMap(null)
+  }, [])
 
   useEffect(() => {
     let google = window.google;
@@ -141,8 +167,40 @@ export default function GoogleMap() {
 
   
 
-
-  return (
+  return isLoaded ? (
+      <>
+      <div className="w-full p-8 m-2 rounded-lg bg-slate-300">
+        <label htmlFor="w3w" className="font-semibold text-slate-600 sr-only">Localização</label>
+        <What3wordsAutosuggest api_key={`${process.env.NEXT_PUBLIC_WORD_API_KEY}`} 
+          clip_to_country="BR"
+          language="pt"
+          invalid_address_error_message="Localização não encontrada">
+          <input
+            id="w3w"
+            type="text"
+            value={value}
+            onChange={onChange}
+            className="input-field"
+          />
+        </What3wordsAutosuggest>
+        </div>
+        <div className="relative w-full rounded h-full">
+        <div className="rounded w-full h-full" ref={mapRef} />
+      </div>
+    
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={10}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+      >
+        { /* Child components, such as markers, info windows, etc. */ }
+        <></>
+      </GoogleMap>
+      </>
+  ) : <></>
+  /*return (
     <>
     <div className="w-full p-8 m-2 rounded-lg bg-slate-300">
       <label htmlFor="w3w" className="font-semibold text-slate-600 sr-only">Localização</label>
@@ -163,7 +221,7 @@ export default function GoogleMap() {
         <div className="rounded w-full h-full" ref={mapRef} />
       </div>
     </>
-  );
+  );*/
 }
 
 
