@@ -1,6 +1,10 @@
+// @ts-nocheck
+
 import Reach, { useState, useEffect, useRef, useCallback } from "react";
 import {  GridSectionClient, GridSectionOptions, GridSectionGeoJsonResponse, AvailableLanguagesClient } from "@what3words/api";
 import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
+
+import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
 
 
@@ -9,7 +13,14 @@ export default function GoogleMapApp() {
   const onChange = (e) => setValue(e.target.value);
   const mapRef = useRef(null);
 
+  const [map, setMap] = useState();
+  useEffect(() => {
+  if (mapRef.current && !map) {
+    setMap(new window.google.maps.Map(ref.current, {}));
+    }
+  }, [mapRef, map]);
 
+/*
   useEffect(() => {
     let google = window.google;
     let map = mapRef.current;
@@ -46,44 +57,6 @@ export default function GoogleMapApp() {
           })
           .catch(console.error)
 
-          
-          
-
-          /*
-            const gridSectionClient: GridSectionClient = GridSectionClient.init(process.env.NEXT_PUBLIC_WORD_API_KEY);
-            const gridSectionOptions: GridSectionOptions = {
-              southwest: { lat: sw.lat(), lng: sw.lng() },
-              northeast: { lat: ne.lat(), lng: ne.lng() }
-            }
-            gridSectionClient.run(gridSectionOptions)
-            .then((res: GridSectionResponse) => {
-              const geoJson = {
-                type: 'FeatureCollection',
-                features: res.features,
-              };
-              const geoJsonLayer = new google.maps.Data({ map: map });
-              geoJsonLayer.addGeoJson(geoJson);
-          });
-          */
-       
-
-        /*
-            const gridSectionClient = new GridSectionClient(process.env.NEXT_PUBLIC_WORD_API_KEY);
-            gridSectionClient.run({
-              southwest: { lat: sw.lat(), lng: sw.lng() },
-              northeast: { lat: ne.lat(), lng: ne.lng() },
-            }).then((res: GridSectionGeoJsonResponse) => {
-              console.log(res);
-              const geoJson = {
-                type: 'FeatureCollection',
-                features: res.features,
-              };
-              const geoJsonLayer = new google.maps.Data({ map: map });
-              geoJsonLayer.addGeoJson(geoJson);
-          });*/
-        //});
-
-
       map.data.setStyle({
           visible: loadFeatures,
           strokeColor: '#777',
@@ -93,6 +66,7 @@ export default function GoogleMapApp() {
 
       }
     });
+*/
 /*
     const autosuggest = document.getElementById("autosuggest");
     console.log(autosuggest);
@@ -126,25 +100,10 @@ export default function GoogleMapApp() {
           }
         });
       });*/
-    
 
-    
-
-    /*const marker = new google.maps.Marker({
-      position: myLatlng,
-      map: map,
-      animation: google.maps.Animation.DROP,
-      title: "Notus NextJS!",
-    });*/
-
-    //const contentString = '<div class="info-window-content"><h2>Notus NextJS</h2>' + "<p>A free Admin for Tailwind CSS, React, React Hooks, and NextJS.</p></div>";
-    //const infowindow = new google.maps.InfoWindow({content: contentString, });
-    //google.maps.event.addListener(marker, "click", function () {infowindow.open(map, marker); });
-  });
+  //});
 
   
-
-
   return (
     <>
     <div className="w-full p-8 m-2 rounded-lg bg-slate-300">
@@ -166,7 +125,30 @@ export default function GoogleMapApp() {
         <div className="rounded w-full h-full" ref={mapRef} />
       </div>
     </>
-  );
+  )
+
+  /*return (
+    <>
+    <div className="w-full p-8 m-2 rounded-lg bg-slate-300">
+      <label htmlFor="w3w" className="font-semibold text-slate-600 sr-only">Localização</label>
+      <What3wordsAutosuggest api_key={`${process.env.NEXT_PUBLIC_WORD_API_KEY}`} 
+        clip_to_country="BR"
+        language="pt"
+        invalid_address_error_message="Localização não encontrada">
+        <input
+          id="w3w"
+          type="text"
+          value={value}
+          onChange={onChange}
+          className="input-field"
+        />
+      </What3wordsAutosuggest>
+      </div>
+      <div className="relative w-full rounded h-full">
+        <div className="rounded w-full h-full" ref={mapRef} />
+      </div>
+    </>
+  );*/
 }
 
 

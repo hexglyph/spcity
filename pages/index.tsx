@@ -9,6 +9,7 @@ import { Navbar } from "../components/Navbar";
 import GoogleMapApp from "../components/Map";
 import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
 import WhatForm from "../components/WhatForm";
+import { Wrapper } from "@googlemaps/react-wrapper";
 
 
 export const getServerSideProps: GetServerSideProps = async () => {
@@ -44,7 +45,10 @@ const Home: React.FC<Props> = (props) => {
           
           <div className={`relative flex flex-col w-full min-h-[600px] md:w-3/5`}>
             <div id="map" className="flex flex-col w-full h-full grow">
-              <GoogleMapApp />
+              <Wrapper apiKey={`${process.env.NEXT_PUBLIC_API_KEY_MAPS}`} render={render}>
+                <GoogleMapApp />
+              </Wrapper>
+              
             </div>
             
             
