@@ -16,7 +16,7 @@ export default function GoogleMapApp() {
   const [map, setMap] = useState();
   useEffect(() => {
   if (mapRef.current && !map) {
-    setMap(new window.google.maps.Map(ref.current, {}));
+    setMap(new window.google.maps.Map(mapRef.current, {}));
     }
   }, [mapRef, map]);
 
