@@ -43,10 +43,9 @@ const Home: React.FC<Props> = (props) => {
         <main className={`flex w-full h-auto`}>
           
           <div className={`relative flex flex-col w-full min-h-[600px] md:w-3/5`}>
-            <GoogleMapApp />
-            {/*<div id="map" className="flex flex-col w-full h-full grow">
+            <div id="map" className="flex flex-col w-full h-full grow">
               <GoogleMapApp />
-            </div>*/}
+            </div>
             
             
             
