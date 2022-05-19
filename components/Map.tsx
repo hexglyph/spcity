@@ -2,7 +2,7 @@ import Reach, { useState, useEffect, useRef, useCallback } from "react";
 import {  GridSectionClient, GridSectionOptions, GridSectionGeoJsonResponse, AvailableLanguagesClient } from "@what3words/api";
 import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
 
-import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, useJsApiLoader } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '400px',
@@ -187,17 +187,20 @@ export default function GoogleMapApp() {
         <div className="relative w-full rounded h-full">
         <div className="rounded w-full h-full" ref={mapRef} />
       </div>
-    
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={10}
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-      >
-        { /* Child components, such as markers, info windows, etc. */ }
-        <></>
-      </GoogleMap>
+      <LoadScript
+          googleMapsApiKey={`${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}
+        >
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={center}
+          zoom={10}
+          onLoad={onLoad}
+          onUnmount={onUnmount}
+        >
+          { /* Child components, such as markers, info windows, etc. */ }
+          <></>
+        </GoogleMap>
+      </LoadScript>
       </>
   ) : <></>
   /*return (

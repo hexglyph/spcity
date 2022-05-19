@@ -32,10 +32,10 @@ const Home: React.FC<Props> = (props) => {
     <Layout>
       <Head>
         <title>Home</title>
-        <script
+        {/*<script
             src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}
             async
-          ></script>
+  ></script>*/}
       </Head>
       <Navbar title={""} icon={""}/>
       <div className="page">
