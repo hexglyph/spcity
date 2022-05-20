@@ -1,24 +1,39 @@
-// @ts-nocheck
+
 
 import Reach, { useState, useEffect, useRef, useCallback } from "react";
 import {  GridSectionClient, GridSectionOptions, GridSectionGeoJsonResponse, AvailableLanguagesClient } from "@what3words/api";
 import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
-
-import { Wrapper, Status } from "@googlemaps/react-wrapper";
-
-
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
 export default function GoogleMapApp() {
   const [value, setValue] = useState("");
   const onChange = (e) => setValue(e.target.value);
   const mapRef = useRef(null);
 
-  const [map, setMap] = useState();
-  useEffect(() => {
-  if (mapRef.current && !map) {
-    setMap(new window.google.maps.Map(mapRef.current, {}));
-    }
-  }, [mapRef, map]);
+  /*react-google-maps-api*/
+  const containerStyle = {
+    width: '100%',
+    height: '100%'
+  };
+  const center = {
+    lat: -23.54748429489416,
+    lng: -46.637100424385785
+  };  
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_API_KEY_MAPS
+  })
+  const [map, setMap] = useState('')
+  const onLoad = useCallback(function callback(map) {
+    const bounds = new window.google.maps.LatLngBounds(center);
+    map.fitBounds(bounds);
+    setMap(map)
+  }, [])
+  const onUnmount = useCallback(function callback(map) {
+    setMap(null)
+  }, [])
+
+
 
 /*
   useEffect(() => {
@@ -104,7 +119,7 @@ export default function GoogleMapApp() {
   //});
 
   
-  return (
+  return isLoaded ? (
     <>
     <div className="w-full p-8 m-2 rounded-lg bg-slate-300">
       <label htmlFor="w3w" className="font-semibold text-slate-600 sr-only">Localização</label>
@@ -119,13 +134,41 @@ export default function GoogleMapApp() {
           onChange={onChange}
           className="input-field"
         />
+        
       </What3wordsAutosuggest>
       </div>
+      { 
+          map && ( 
+            <What3wordsMap
+              map={map}
+              api_key={`${process.env.NEXT_PUBLIC_WORD_API_KEY}`}
+              clip_to_country="BR"
+              language="pt"
+              invalid_address_error_message="Localização não encontrada"
+              onLoad={onLoad}
+              onUnmount={onUnmount}
+            />
+          )
+        }
       <div className="relative w-full rounded h-full">
-        <div className="rounded w-full h-full" ref={mapRef} />
+        <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={10}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+      >
+        
+        <></>
+      </GoogleMap>
+        {/*<div className="rounded w-full h-full" ref={mapRef}>
+          <div id="map" className="flex flex-col w-full h-full grow">
+          </div>
+
+        </div>*/}
       </div>
     </>
-  )
+  ) : <></>
 
   /*return (
     <>

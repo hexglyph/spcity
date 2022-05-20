@@ -44,15 +44,7 @@ const Home: React.FC<Props> = (props) => {
         <main className={`flex w-full h-auto`}>
           
           <div className={`relative flex flex-col w-full min-h-[600px] md:w-3/5`}>
-            <div id="map" className="flex flex-col w-full h-full grow">
-              <Wrapper apiKey={`${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}>
-                <GoogleMapApp />
-              </Wrapper>
-              
-            </div>
-            
-            
-            
+            <GoogleMapApp />
           </div>
           <div className="flex w-2/5">
             {props.feed.map((post) => (
