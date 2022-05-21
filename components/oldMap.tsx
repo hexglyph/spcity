@@ -5,7 +5,7 @@ import {  GridSectionClient, GridSectionOptions, GridSectionGeoJsonResponse, Ava
 import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 
-export default function GoogleMapApp() {
+export default function oldMap() {
   const [value, setValue] = useState("");
   const onChange = (e) => setValue(e.target.value);
   const mapRef = useRef(null);
@@ -120,6 +120,12 @@ export default function GoogleMapApp() {
 
   
   return isLoaded ? (
+    <>
+    <div className="w-full p-8 m-2 rounded-lg bg-slate-300">
+      </div>
+       
+          
+        
       <div className="relative w-full rounded h-full">
         <GoogleMap
         mapContainerStyle={containerStyle}
@@ -137,6 +143,7 @@ export default function GoogleMapApp() {
 
         </div>*/}
       </div>
+    </>
   ) : <></>
 
   /*return (

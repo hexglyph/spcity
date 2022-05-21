@@ -6,8 +6,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-          primary: "#242d47",
-          secondary: '#171d2d',
+        primary: {
+          500: "#BFDBEF",
+          800: "#A0BDCF",
+        },
+        secondary: {
+          500: "#2AA0C6",
+        },
+        tertiary: {
+          500: "#1D5BA4",
+        },
+        quaternary: {
+          500: "#FFB335",
+        },          
       },
       flexBasis: {
           '1/7': '14.2857143%',

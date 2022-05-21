@@ -7,9 +7,7 @@ import Layout from "../components/Layout"
 import Post, { PostProps } from "../components/Post"
 import { Navbar } from "../components/Navbar";
 import GoogleMapApp from "../components/Map";
-import { What3wordsAutosuggest, What3wordsMap } from "@what3words/react-components";
-import WhatForm from "../components/WhatForm";
-import { Wrapper } from "@googlemaps/react-wrapper";
+import User from "../components/User";
 
 
 export const getServerSideProps: GetServerSideProps = async () => {
@@ -32,21 +30,19 @@ const Home: React.FC<Props> = (props) => {
   return (
     <Layout>
       <Head>
-        <title>Home</title>
-        {/*<script
-            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_API_KEY_MAPS}`}
-            async
-  ></script>*/}
+        <title>SPCity</title>
       </Head>
-      <Navbar title={""} icon={""}/>
-      <div className="page">
-        <h1>SPCity</h1>
+      
+      
+      <div className="relative page overflow-hidden">
+        <User />
+        <Navbar title={"SPCity"} icon={""}/>
         <main className={`flex w-full h-auto`}>
           
-          <div className={`relative flex flex-col w-full min-h-[600px] md:w-3/5`}>
+          <div className={`relative flex flex-col w-screen h-screen`}>
             <GoogleMapApp />
           </div>
-          <div className="flex w-2/5">
+          <div className="fixed top-0 bottom-0 right-0 h-screen w-[300px] flex z-30">
             {props.feed.map((post) => (
               <div key={post.id} className={`post`}>
                 <Post post={post} />
