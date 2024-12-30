@@ -5,12 +5,12 @@ import { Suspense } from 'react'
 
 const SaoPauloMap = dynamic(() => import('./SaoPauloMap'), {
     ssr: false,
-    loading: () => <p>Loading map...</p>
+    loading: () => <p>Carregando Mapa...</p>
 })
 
 export default function MapWrapper() {
     return (
-        <Suspense fallback={<div className="w-full h-screen flex items-center justify-center">Loading map...</div>}>
+        <Suspense fallback={<div className="w-full h-screen flex items-center justify-center">Carregando Mapa...</div>}>
             <SaoPauloMap />
         </Suspense>
     )
