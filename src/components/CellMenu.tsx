@@ -1,6 +1,7 @@
 import React from 'react'
 import { GridCell } from '@/models/GridCell'
 import { FaMapMarkerAlt, FaCrown, FaInfoCircle, FaHistory } from 'react-icons/fa'
+import { GovernancePanel } from './GovernancePanel'
 
 interface CellMenuProps {
     cellNumber: number
@@ -9,7 +10,7 @@ interface CellMenuProps {
     onClose: () => void
 }
 
-const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) => {
+const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, centerCoords, cellData, onClose }) => {
     const getLocalizedName = () => {
         if (!cellData?.names) return ''
 
@@ -29,7 +30,6 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
     return (
         <div className="fixed right-0 top-0 h-full w-80 bg-gray-800 text-white shadow-lg p-6 z-[2000] overflow-y-auto">
             <button
-                title='Fechar'
                 className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
                 onClick={onClose}
             >
@@ -52,13 +52,10 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
                     </div>
                 </div>
 
-                <div className="bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-xl font-semibold mb-2 flex items-center">
-                        <FaCrown className="mr-2 text-yellow-400" />
-                        Governante
-                    </h3>
-                    <p className="text-lg italic text-gray-400">Em breve</p>
-                </div>
+                {cellData && <GovernancePanel
+                    cellId={cellData._id?.toString() || ''}
+                    governance={cellData.governance}
+                />}
 
                 <div className="bg-gray-700 p-4 rounded-lg">
                     <h3 className="text-xl font-semibold mb-2 flex items-center">

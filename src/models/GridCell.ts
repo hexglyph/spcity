@@ -13,6 +13,12 @@ export interface GridCell {
         japanese: string
         spanish: string
     }
+    governance?: {
+        governorId: string
+        governorName: string
+        claimedAt: Date
+        expiresAt: Date
+    }
     data: Record<string, unknown>
 }
 

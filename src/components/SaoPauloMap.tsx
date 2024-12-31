@@ -1,11 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import CellMenu from './CellMenu'
 import { saoPauloBoundary } from '../data/saoPauloBoundary'
 import { GridCell } from '@/models/GridCell'
+import { FaLocationArrow } from 'react-icons/fa'
+import debounce from 'lodash/debounce'
 
 const SAO_PAULO_CENTER: L.LatLngTuple = [-23.5505, -46.6333]
 const INITIAL_ZOOM = 14
@@ -13,13 +16,19 @@ const MAX_ZOOM = 22
 const GRID_SIZE = 5 // meters
 
 const SaoPauloMap = () => {
+  const { data: session } = useSession()
   const mapRef = useRef<L.Map | null>(null)
   const gridLayerRef = useRef<L.LayerGroup | null>(null)
+  const governedCellsLayerRef = useRef<L.LayerGroup | null>(null) // Added governedCellsLayerRef
   const selectedCellLayerRef = useRef<L.LayerGroup | null>(null)
+  const locationMarkerRef = useRef<L.Marker | null>(null)
   const [mapReady, setMapReady] = useState(false)
   const [showGrid, setShowGrid] = useState(true)
   const [selectedCell, setSelectedCell] = useState<GridCell | null>(null)
   const [mapHeight, setMapHeight] = useState('100vh')
+  const [userLocation, setUserLocation] = useState<L.LatLng | null>(null)
+  const [isLocating, setIsLocating] = useState(false)
+  const [governedCells, setGovernedCells] = useState<number[]>([])
 
   const toggleGrid = () => {
     setShowGrid((prev) => !prev)
@@ -91,23 +100,27 @@ const SaoPauloMap = () => {
   }, [])
 
   const updateGrid = useCallback(() => {
-    if (!mapRef.current || !gridLayerRef.current) return
+    if (!mapRef.current || !gridLayerRef.current || !governedCellsLayerRef.current) return
 
     const zoom = mapRef.current.getZoom()
-    if (zoom < 20 || !showGrid) {
-      gridLayerRef.current.clearLayers()
-      return
-    }
-
     const bounds = mapRef.current.getBounds()
 
     gridLayerRef.current.clearLayers()
+    governedCellsLayerRef.current.clearLayers()
 
     const gridSizeInDegrees = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
 
-    // Calculate the number of cells to cover the visible area
+    // Ajuste o tamanho mínimo da célula com base no zoom
+    const minCellSize = 10 / Math.pow(2, zoom)
+    if (zoom < 16 && !governedCells.length) return // Só retorna se o zoom for menor que 16 e não houver células governadas
+
+    // Calcule o número de células para cobrir a área visível
     const cellsX = Math.ceil((bounds.getEast() - bounds.getWest()) / gridSizeInDegrees)
     const cellsY = Math.ceil((bounds.getNorth() - bounds.getSouth()) / gridSizeInDegrees)
+
+    // Limite o número máximo de células a serem renderizadas
+    const maxCells = 10000
+    if (cellsX * cellsY > maxCells) return
 
     // Calculate the starting point for the grid, aligned with São Paulo's center
     const startLat = Math.floor((bounds.getSouth() - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[0]
@@ -127,21 +140,92 @@ const SaoPauloMap = () => {
           const cellNumber = Math.floor((cellLat - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * 1000 +
             Math.floor((cellLon - SAO_PAULO_CENTER[1]) / gridSizeInDegrees)
 
-          L.rectangle(cellBounds, {
-            color: 'red',
+          const isGoverned = governedCells.includes(cellNumber)
+
+          const rectangle = L.rectangle(cellBounds, {
+            color: isGoverned ? 'green' : 'red',
             weight: 1,
-            fillColor: 'transparent',
-            fillOpacity: 0
+            fillColor: isGoverned ? 'green' : 'transparent',
+            fillOpacity: isGoverned ? 0.3 : 0
           })
-            .addTo(gridLayerRef.current)
             .on('contextmenu', () => {
               const center = cellBounds.getCenter()
               handleCellAction(cellNumber, [center.lat, center.lng], [cellLat, cellLon])
             })
+
+          if (isGoverned) {
+            rectangle.addTo(governedCellsLayerRef.current)
+          } else if (zoom >= 16 && showGrid) { // Alterado de 20 para 16
+            rectangle.addTo(gridLayerRef.current)
+          }
         }
       }
     }
-  }, [showGrid, handleCellAction, isRectangleInPolygon])
+  }, [showGrid, handleCellAction, isRectangleInPolygon, governedCells])
+
+  const debouncedUpdateGrid = useCallback(
+    debounce(() => {
+      updateGrid()
+    }, 100),
+    [updateGrid]
+  )
+
+
+  const updateUserLocationMarker = useCallback((position: L.LatLng) => {
+    if (!mapRef.current) return
+
+    if (!locationMarkerRef.current) {
+      locationMarkerRef.current = L.marker(position, {
+        icon: L.divIcon({
+          className: 'w-5 h-5 rounded-full bg-blue-500 border-2 border-white shadow-md',
+          html: '<div class="w-full h-full rounded-full bg-blue-500 opacity-70 animate-ping"></div>',
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        })
+      }).addTo(mapRef.current)
+    } else {
+      locationMarkerRef.current.setLatLng(position)
+    }
+
+    setUserLocation(position)
+  }, [])
+
+  const handleLocationFound = useCallback((e: L.LocationEvent) => {
+    const { lat, lng } = e.latlng
+    updateUserLocationMarker(e.latlng)
+    if (mapRef.current) {
+      mapRef.current.flyTo([lat, lng], 18)
+    }
+    setIsLocating(false)
+  }, [updateUserLocationMarker])
+
+  const handleLocationError = useCallback((e: L.ErrorEvent) => {
+    console.error('Error getting location:', e.message)
+    setIsLocating(false)
+    // You might want to show an error message to the user here
+  }, [])
+
+  const locateUser = useCallback(() => {
+    if (!mapRef.current) return
+
+    setIsLocating(true)
+    mapRef.current.locate({ setView: false, maxZoom: 18 })
+  }, [])
+
+  const fetchGovernedCells = useCallback(async () => {
+    if (!session?.user?.id) return
+
+    try {
+      const response = await fetch(`/api/player/governed-cells?userId=${session.user.id}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch governed cells')
+      }
+      const data = await response.json()
+      setGovernedCells(data.governedCells)
+    } catch (error) {
+      console.error('Error fetching governed cells:', error)
+    }
+  }, [session?.user?.id])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !mapRef.current) {
@@ -168,12 +252,20 @@ const SaoPauloMap = () => {
       }).addTo(mapRef.current)
 
       gridLayerRef.current = L.layerGroup().addTo(mapRef.current)
+      governedCellsLayerRef.current = L.layerGroup().addTo(mapRef.current) // Added governedCellsLayerRef initialization
       selectedCellLayerRef.current = L.layerGroup().addTo(mapRef.current)
 
-      mapRef.current.on('zoomend', updateGrid)
-      mapRef.current.on('moveend', updateGrid)
+      mapRef.current.on('zoomend', debouncedUpdateGrid)
+      mapRef.current.on('moveend', debouncedUpdateGrid)
+      mapRef.current.on('locationfound', handleLocationFound)
+      mapRef.current.on('locationerror', handleLocationError)
 
       setMapReady(true)
+
+      // Inform the parent component that the map is ready
+      if (typeof window !== 'undefined' && window.dispatchEvent) {
+        window.dispatchEvent(new Event('mapReady'))
+      }
     }
 
     return () => {
@@ -182,17 +274,27 @@ const SaoPauloMap = () => {
         mapRef.current = null
       }
     }
-  }, [updateGrid])
+  }, [debouncedUpdateGrid, handleLocationFound, handleLocationError])
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchGovernedCells()
+    }
+  }, [session?.user?.id, fetchGovernedCells])
 
   useEffect(() => {
     if (mapRef.current && gridLayerRef.current) {
       updateGrid()
     }
-  }, [showGrid, updateGrid])
+  }, [updateGrid, governedCells])
 
   useEffect(() => {
     updateSelectedCellHighlight(selectedCell)
   }, [selectedCell, updateSelectedCellHighlight])
+
+  useEffect(() => {
+    //Removed renderGovernedCells()
+  }, [])
 
   useEffect(() => {
     const updateMapHeight = () => {
@@ -209,6 +311,48 @@ const SaoPauloMap = () => {
     return () => window.removeEventListener('resize', updateMapHeight)
   }, [])
 
+  const navigateToCell = useCallback((cellNumber: number) => {
+    if (!mapRef.current) return
+
+    const gridSizeInDegrees = GRID_SIZE / 111000
+    const latOffset = Math.floor(cellNumber / 1000) * gridSizeInDegrees
+    const lngOffset = (cellNumber % 1000) * gridSizeInDegrees
+
+    const cellLat = SAO_PAULO_CENTER[0] + latOffset
+    const cellLng = SAO_PAULO_CENTER[1] + lngOffset
+
+    mapRef.current.setView([cellLat, cellLng], 18)
+
+    // Highlight the cell
+    const cellBounds = L.latLngBounds(
+      [cellLat, cellLng],
+      [cellLat + gridSizeInDegrees, cellLng + gridSizeInDegrees]
+    )
+
+    if (selectedCellLayerRef.current) {
+      selectedCellLayerRef.current.clearLayers()
+      L.rectangle(cellBounds, {
+        color: 'blue',
+        weight: 2,
+        fillColor: 'blue',
+        fillOpacity: 0.3
+      }).addTo(selectedCellLayerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleNavigateToCell = (event: CustomEvent<{ cellNumber: number }>) => {
+      navigateToCell(event.detail.cellNumber)
+    }
+
+    window.addEventListener('navigateToCell', handleNavigateToCell as EventListener)
+
+    return () => {
+      window.removeEventListener('navigateToCell', handleNavigateToCell as EventListener)
+    }
+  }, [navigateToCell])
+
+
   return (
     <div className="relative w-full" style={{ height: mapHeight }}>
       <div id="map" className="w-full h-full" />
@@ -217,12 +361,22 @@ const SaoPauloMap = () => {
           <p className="text-xl font-semibold">Loading map...</p>
         </div>
       )}
-      <button
-        className="absolute top-4 left-4 z-[1000] bg-white px-4 py-2 rounded shadow"
-        onClick={toggleGrid}
-      >
-        {showGrid ? 'Hide Grid' : 'Show Grid'}
-      </button>
+      <div className="absolute top-4 left-4 z-[1000] space-y-2">
+        <button
+          className="bg-white px-4 py-2 rounded shadow hover:bg-gray-100 transition-colors"
+          onClick={toggleGrid}
+        >
+          {showGrid ? 'Hide Grid' : 'Show Grid'}
+        </button>
+        <button
+          className="bg-white px-4 py-2 rounded shadow hover:bg-gray-100 transition-colors flex items-center justify-center w-full"
+          onClick={locateUser}
+          disabled={isLocating}
+        >
+          <FaLocationArrow className="mr-2" />
+          {isLocating ? 'Locating...' : 'Find Me'}
+        </button>
+      </div>
       {selectedCell && (
         <CellMenu
           cellNumber={selectedCell.cellNumber}
