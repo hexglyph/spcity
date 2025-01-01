@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SPCITY
 
-## Getting Started
+SPCITY é uma aplicação para facilitar a interação dos cidadãos com o governo municipal de São Paulo, promovendo o registro, acompanhamento e gestão de demandas urbanas de forma simplificada, eficiente e transparente.
 
-First, run the development server:
+## 📜 Sobre o Projeto
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+A interação com o governo é muitas vezes burocrática e desmotivadora para os cidadãos. SPCITY busca revolucionar esse cenário, permitindo que os usuários reportem problemas urbanos de forma intuitiva e acompanhem suas resoluções em tempo real. 
+
+### Funcionalidades Principais
+- Registro de demandas urbanas usando geolocalização simplificada.
+- Visualização de demandas abertas no mapa interativo.
+- Sistema de feedback contínuo.
+- Incentivo ao engajamento por meio de gamificação.
+- Interface amigável e acessível.
+
+## 🚀 Tecnologias Utilizadas
+
+- **Frontend**: React e Next.js 15.
+- **Backend**: MongoDB e APIs customizadas.
+- **Geolocalização**: Leaflet para renderização de mapas interativos.
+- **Autenticação**: NextAuth com adaptador MongoDB.
+- **Styling**: TailwindCSS com suporte a animações.
+
+## 📦 Como Instalar
+
+### Pré-requisitos
+- [Bun](https://bun.sh/) instalado no sistema.
+- Node.js versão mínima 18 (recomendado para compatibilidade).
+- MongoDB configurado e em execução.
+
+### Passo a Passo
+
+1. Clone o repositório:
+    ```bash
+    git clone https://github.com/seu-usuario/spcity.git
+    cd spcity
+    ```
+
+2. Instale as dependências:
+    ```bash
+    bun install
+    ```
+
+3. Configure as variáveis de ambiente:
+    Crie um arquivo `.env` na raiz do projeto e adicione as variáveis necessárias, como:
+    ```env
+    MONGODB_URI=mongodb+srv://seu-usuario:senha@cluster.mongodb.net/spcity
+    NEXTAUTH_SECRET=sua_chave_secreta
+    ```
+
+4. Inicie o servidor de desenvolvimento:
+    ```bash
+    bun run dev
+    ```
+
+5. Acesse o aplicativo no navegador em [http://localhost:3000](http://localhost:3000).
+
+## 📋 Estrutura do Projeto
+
+```
+spcity/
+├── public/                # Arquivos públicos
+├── src/                   # Código-fonte principal
+│   ├── pages/             # Rotas e páginas do Next.js
+│   ├── components/        # Componentes reutilizáveis
+│   ├── styles/            # Estilos globais
+│   ├── lib/               # Funções utilitárias e configurações
+│   └── api/               # APIs customizadas
+├── .env                   # Variáveis de ambiente
+├── package.json           # Gerenciador de dependências
+├── bun.lockb              # Arquivo de lock do Bun
+└── tailwind.config.js     # Configuração do TailwindCSS
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎮 Gamificação
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+O aplicativo inclui um sistema de gamificação que incentiva o uso contínuo e responsável:
+- **Níveis:** Baseados na interação do usuário.
+- **Ranking:** Avaliação qualitativa de contribuições.
+- **Controle Educativo:** Penalidades para uso indevido do sistema.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛡️ Privacidade e Segurança
 
-## Learn More
+- Dados pessoais são anonimizados e tratados em conformidade com a LGPD.
+- Todas as interações são realizadas em canais seguros.
 
-To learn more about Next.js, take a look at the following resources:
+## 🤝 Contribuições
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Contribuições são bem-vindas! Para colaborar:
+1. Crie um fork do repositório.
+2. Crie uma branch para sua feature: `git checkout -b minha-feature`.
+3. Envie um pull request para revisão.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📝 Licença
 
-## Deploy on Vercel
+Este projeto é proprietário. O uso, modificação ou redistribuição são permitidos apenas sob autorização do autor.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Contato:**
+- Email: dnbraz@prodam.sp.gov.br
+- LinkedIn: [[Seu Perfil](https://www.linkedin.com/in/seu-perfil/)](https://www.linkedin.com/in/danielniebraz/)
