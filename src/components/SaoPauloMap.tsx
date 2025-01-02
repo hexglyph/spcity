@@ -6,7 +6,6 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import CellMenu from './CellMenu'
 import SearchBar from './SearchBar'
-import FooterLinks from './FooterLinks'
 import { saoPauloBoundary } from '../data/saoPauloBoundary'
 import { GridCell } from '@/models/GridCell'
 import { FaLocationArrow } from 'react-icons/fa'
@@ -31,9 +30,6 @@ const SaoPauloMap = () => {
   const [mapHeight, setMapHeight] = useState('100vh')
   const [isLocating, setIsLocating] = useState(false)
   const [governedCells, setGovernedCells] = useState<number[]>([])
-
-  // Remove unused state
-  // const [userLocation, setUserLocation] = useState<L.LatLng | null>(null)
 
   const toggleGrid = () => {
     setShowGrid((prev) => !prev)
@@ -61,10 +57,7 @@ const SaoPauloMap = () => {
 
   const handleCellAction = useCallback(async (cellNumber: number, center: [number, number]) => {
     try {
-      // Adjust the coordinates to ensure they fall within a cell rather than on the borders
-      const gridSizeInDegrees = GRID_SIZE / 111000 // Convert 5 meters to degrees
-
-      // Calculate the cell's top-left corner coordinates
+      const gridSizeInDegrees = GRID_SIZE / 111000
       const adjustedLat = Math.floor((center[0] - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[0]
       const adjustedLng = Math.floor((center[1] - SAO_PAULO_CENTER[1]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[1]
 
@@ -124,8 +117,6 @@ const SaoPauloMap = () => {
 
     const gridSizeInDegrees = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
 
-    // Remove unused variable
-    // const minCellSize = 10 / Math.pow(2, zoom)
     if (zoom < 16 && !governedCells.length) return // Só retorna se o zoom for menor que 16 e não houver células governadas
 
     // Calcule o número de células para cobrir a área visível
@@ -199,9 +190,6 @@ const SaoPauloMap = () => {
     } else {
       locationMarkerRef.current.setLatLng(position)
     }
-
-    // Remove unused state update
-    // setUserLocation(position)
   }, [])
 
   const handleLocationFound = useCallback((e: L.LocationEvent) => {
@@ -419,7 +407,6 @@ const SaoPauloMap = () => {
           <FaLocationArrow className="mr-2" />
           {isLocating ? 'Locating...' : 'Find Me'}
         </button>
-        <FooterLinks />
       </div>
       {selectedCell && (
         <CellMenu
