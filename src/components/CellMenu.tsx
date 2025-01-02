@@ -76,7 +76,8 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
 
                 <div className="bg-gray-700 p-4 rounded-lg">
                     <h3 className="text-xl font-semibold mb-2">Coordenadas</h3>
-                    {cellData?.coordinates ? (
+                    {/*
+                    cellData?.coordinates ? (
                         <>
                             <div className="mb-3">
                                 <p className="text-sm font-semibold mb-1 text-yellow-400">Latitude:</p>
@@ -95,9 +96,18 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
                         </>
                     ) : (
                         <p className="text-sm italic text-gray-400">Coordenadas não disponíveis</p>
-                    )}
+                    )
+                        */
+                    }
                 </div>
             </div>
+            <button
+                title='Abrir Demanda'
+                className="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                onClick={() => {/* TODO: Implement open demand functionality */ }}
+            >
+                Abrir Demanda
+            </button>
         </div>
     )
 }

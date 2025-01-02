@@ -2,7 +2,7 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useEffect, useState } from 'react'
-import { FaUser, FaStar, FaMapMarkedAlt } from 'react-icons/fa'
+import { FaUser, FaStar, FaMapMarkedAlt, FaClipboardList } from 'react-icons/fa'
 import TerritoryList from './TerritoryList'
 
 interface PlayerData {
@@ -111,6 +111,13 @@ export default function PlayerMenu() {
                         <div>XP: {playerData?.experience || 0}</div>
                         <div>Rank: {playerData?.rank || 'Bronze 3'}</div>
                     </div>
+                    <button
+                        onClick={() => {/* TODO: Implement my demands functionality */ }}
+                        className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors flex items-center"
+                    >
+                        <FaClipboardList className="mr-2" />
+                        Minhas Demandas
+                    </button>
                     <button
                         onClick={toggleTerritoryList}
                         className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors flex items-center"
