@@ -99,4 +99,4 @@ Este projeto é proprietário. O uso, modificação ou redistribuição são per
 
 **Contato:**
 - Email: dnbraz@prodam.sp.gov.br
-- LinkedIn: [[Seu Perfil](https://www.linkedin.com/in/seu-perfil/)](https://www.linkedin.com/in/danielniebraz/)
+- LinkedIn: [[Seu Perfil](https://www.linkedin.com/in/danielniebraz/)](https://www.linkedin.com/in/danielniebraz/)
