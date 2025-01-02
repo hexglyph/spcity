@@ -97,6 +97,9 @@ Este projeto é proprietário. O uso, modificação ou redistribuição são per
 
 ---
 
+Todo:
+Implementar REDIS
+
 **Contato:**
 - Email: dnbraz@prodam.sp.gov.br
 - LinkedIn: [[Seu Perfil](https://www.linkedin.com/in/danielniebraz/)](https://www.linkedin.com/in/danielniebraz/)
