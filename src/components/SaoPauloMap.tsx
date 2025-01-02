@@ -6,6 +6,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import CellMenu from './CellMenu'
 import SearchBar from './SearchBar'
+import FooterLinks from './FooterLinks'
 import { saoPauloBoundary } from '../data/saoPauloBoundary'
 import { GridCell } from '@/models/GridCell'
 import { FaLocationArrow } from 'react-icons/fa'
@@ -150,7 +151,8 @@ const SaoPauloMap = () => {
         )
 
         if (isRectangleInPolygon(cellBounds, saoPauloBoundary)) {
-          const cellNumber = Math.floor((cellLat - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * 1000 + Math.floor((cellLon - SAO_PAULO_CENTER[1]) / gridSizeInDegrees)
+          const cellNumber = Math.floor((cellLat - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * 1000 +
+            Math.floor((cellLon - SAO_PAULO_CENTER[1]) / gridSizeInDegrees)
 
           const isGoverned = governedCells.includes(cellNumber)
 
@@ -257,7 +259,7 @@ const SaoPauloMap = () => {
 
       L.geoJSON(saoPauloBoundary, {
         style: {
-          color: 'black',
+          color: 'red',
           weight: 2,
           fillOpacity: 0
         }
@@ -417,6 +419,7 @@ const SaoPauloMap = () => {
           <FaLocationArrow className="mr-2" />
           {isLocating ? 'Locating...' : 'Find Me'}
         </button>
+        <FooterLinks />
       </div>
       {selectedCell && (
         <CellMenu
