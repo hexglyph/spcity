@@ -15,7 +15,7 @@ A interação com o governo é muitas vezes burocrática e desmotivadora para os
 
 ## 🚀 Tecnologias Utilizadas
 
-- **Frontend**: React e Next.js 15.
+- **Frontend**: Next.js 15.
 - **Backend**: MongoDB e APIs customizadas.
 - **Geolocalização**: Leaflet para renderização de mapas interativos.
 - **Autenticação**: NextAuth com adaptador MongoDB.
