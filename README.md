@@ -32,7 +32,7 @@ A interação com o governo é muitas vezes burocrática e desmotivadora para os
 
 1. Clone o repositório:
     ```bash
-    git clone https://github.com/seu-usuario/spcity.git
+    git clone https://github.com/hexglyph/spcity.git
     cd spcity
     ```
 
