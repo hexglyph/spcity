@@ -10,7 +10,7 @@ import { saoPauloBoundary } from '../data/saoPauloBoundary'
 import { GridCell } from '@/models/GridCell'
 import { FaLocationArrow } from 'react-icons/fa'
 import debounce from 'lodash/debounce'
-import { toast } from 'react-toastify' // Import toast
+import { toast } from 'react-hot-toast'
 
 const SAO_PAULO_CENTER: L.LatLngTuple = [-23.5505, -46.6333]
 const INITIAL_ZOOM = 14
@@ -28,10 +28,11 @@ const SaoPauloMap = () => {
   const [showGrid, setShowGrid] = useState(true)
   const [selectedCell, setSelectedCell] = useState<GridCell | null>(null)
   const [mapHeight, setMapHeight] = useState('100vh')
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [userLocation, setUserLocation] = useState<L.LatLng | null>(null)
   const [isLocating, setIsLocating] = useState(false)
   const [governedCells, setGovernedCells] = useState<number[]>([])
+
+  // Remove unused state
+  // const [userLocation, setUserLocation] = useState<L.LatLng | null>(null)
 
   const toggleGrid = () => {
     setShowGrid((prev) => !prev)
@@ -59,8 +60,15 @@ const SaoPauloMap = () => {
 
   const handleCellAction = useCallback(async (cellNumber: number, center: [number, number]) => {
     try {
+      // Adjust the coordinates to ensure they fall within a cell rather than on the borders
+      const gridSizeInDegrees = GRID_SIZE / 111000 // Convert 5 meters to degrees
+
+      // Calculate the cell's top-left corner coordinates
+      const adjustedLat = Math.floor((center[0] - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[0]
+      const adjustedLng = Math.floor((center[1] - SAO_PAULO_CENTER[1]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[1]
+
       const response = await fetch(
-        `/api/gridcell?cellNumber=${cellNumber}&lat=${center[0]}&lng=${center[1]}`
+        `/api/gridcell?cellNumber=${cellNumber}&lat=${adjustedLat}&lng=${adjustedLng}`
       )
       if (!response.ok) {
         throw new Error('Failed to fetch cell data')
@@ -115,8 +123,8 @@ const SaoPauloMap = () => {
 
     const gridSizeInDegrees = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
 
-    // Ajuste o tamanho mínimo da célula com base no zoom
-    //const minCellSize = 10 / Math.pow(2, zoom)
+    // Remove unused variable
+    // const minCellSize = 10 / Math.pow(2, zoom)
     if (zoom < 16 && !governedCells.length) return // Só retorna se o zoom for menor que 16 e não houver células governadas
 
     // Calcule o número de células para cobrir a área visível
@@ -142,8 +150,7 @@ const SaoPauloMap = () => {
         )
 
         if (isRectangleInPolygon(cellBounds, saoPauloBoundary)) {
-          const cellNumber = Math.floor((cellLat - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * 1000 +
-            Math.floor((cellLon - SAO_PAULO_CENTER[1]) / gridSizeInDegrees)
+          const cellNumber = Math.floor((cellLat - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * 1000 + Math.floor((cellLon - SAO_PAULO_CENTER[1]) / gridSizeInDegrees)
 
           const isGoverned = governedCells.includes(cellNumber)
 
@@ -160,7 +167,7 @@ const SaoPauloMap = () => {
 
           if (isGoverned) {
             rectangle.addTo(governedCellsLayerRef.current)
-          } else if (zoom >= 16 && showGrid) { // Alterado de 20 para 16
+          } else if (zoom >= 16 && showGrid) {
             rectangle.addTo(gridLayerRef.current)
           }
         }
@@ -191,7 +198,8 @@ const SaoPauloMap = () => {
       locationMarkerRef.current.setLatLng(position)
     }
 
-    setUserLocation(position)
+    // Remove unused state update
+    // setUserLocation(position)
   }, [])
 
   const handleLocationFound = useCallback((e: L.LocationEvent) => {
@@ -413,7 +421,6 @@ const SaoPauloMap = () => {
       {selectedCell && (
         <CellMenu
           cellNumber={selectedCell.cellNumber}
-          centerCoords={[selectedCell.coordinates.latRange[0], selectedCell.coordinates.lngRange[0]]}
           cellData={selectedCell}
           onClose={() => {
             setSelectedCell(null)
