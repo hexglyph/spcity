@@ -17,6 +17,12 @@ export default function RootLayout({
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+
+    if (window.location.pathname === '/termos' || window.location.pathname === '/privacidade') {
+      setIsLoading(false)
+      return
+    }
+
     let mapReady = false
     let playerDataReady = false
 

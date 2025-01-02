@@ -10,7 +10,7 @@ import { saoPauloBoundary } from '../data/saoPauloBoundary'
 import { GridCell } from '@/models/GridCell'
 import { FaLocationArrow } from 'react-icons/fa'
 import debounce from 'lodash/debounce'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-toastify'
 
 const SAO_PAULO_CENTER: L.LatLngTuple = [-23.5505, -46.6333]
 const INITIAL_ZOOM = 14
