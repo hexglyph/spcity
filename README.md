@@ -101,5 +101,5 @@ Todo:
 Implementar REDIS
 
 **Contato:**
-- Email: dnbraz@prodam.sp.gov.br
+- Email: me@danielniebraz.dev
 - LinkedIn: [[Seu Perfil](https://www.linkedin.com/in/danielniebraz/)](https://www.linkedin.com/in/danielniebraz/)
