@@ -46,7 +46,7 @@ export default function TerritoryList({ onClose }: TerritoryListProps) {
             <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-gray-800">Seu Território</h2>
-                    <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
+                    <button title='Ver Território' onClick={onClose} className="text-gray-600 hover:text-gray-800">
                         <FaTimes size={24} />
                     </button>
                 </div>
@@ -66,6 +66,7 @@ export default function TerritoryList({ onClose }: TerritoryListProps) {
                                         </p>
                                     </div>
                                     <button
+                                        title='Ver detalhes'
                                         onClick={() => navigateToCell(cell.cellNumber)}
                                         className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-colors"
                                     >

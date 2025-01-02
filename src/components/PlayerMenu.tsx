@@ -2,7 +2,7 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useEffect, useState } from 'react'
-import { FaUser, FaStar, FaHeart, FaMagic, FaMapMarkedAlt } from 'react-icons/fa'
+import { FaUser, FaStar, FaMapMarkedAlt } from 'react-icons/fa'
 import TerritoryList from './TerritoryList'
 
 interface PlayerData {

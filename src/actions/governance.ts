@@ -1,10 +1,11 @@
 'use server'
 
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import authOptions from '@/app/api/auth/[...nextauth]/options'
 import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
 import { revalidatePath } from 'next/cache'
+import { Session } from 'next-auth'
 
 interface Position {
     latitude: number
@@ -12,7 +13,7 @@ interface Position {
 }
 
 export async function claimGovernance(cellId: string, position: Position) {
-    const session = await getServerSession(authOptions)
+    const session = (await getServerSession(authOptions)) as Session | null
 
     if (!session?.user) {
         return { success: false, message: 'Você precisa estar logado para reivindicar governança.' }

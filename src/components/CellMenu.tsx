@@ -1,6 +1,6 @@
 import React from 'react'
 import { GridCell } from '@/models/GridCell'
-import { FaMapMarkerAlt, FaCrown, FaInfoCircle, FaHistory } from 'react-icons/fa'
+import { FaMapMarkerAlt, FaInfoCircle, FaHistory } from 'react-icons/fa'
 import { GovernancePanel } from './GovernancePanel'
 
 interface CellMenuProps {
@@ -10,7 +10,7 @@ interface CellMenuProps {
     onClose: () => void
 }
 
-const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, centerCoords, cellData, onClose }) => {
+const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) => {
     const getLocalizedName = () => {
         if (!cellData?.names) return ''
 
@@ -30,6 +30,7 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, centerCoords, cellData,
     return (
         <div className="fixed right-0 top-0 h-full w-80 bg-gray-800 text-white shadow-lg p-6 z-[2000] overflow-y-auto">
             <button
+                title='Fechar'
                 className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
                 onClick={onClose}
             >

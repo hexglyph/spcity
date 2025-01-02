@@ -8,7 +8,7 @@ import { Session } from 'next-auth'
 // Extend the built-in session type
 interface ExtendedSession extends Session {
     user: {
-        id?: string;
+        id: string;
         name?: string | null;
         email?: string | null;
         image?: string | null;
@@ -66,13 +66,16 @@ const authOptions: NextAuthOptions = {
             if (playerData) {
                 (session as ExtendedSession).user = {
                     ...session.user,
-                    id: token.sub,
+                    id: token.sub || session.user.id, // Ensure id is always set
                     level: playerData.level,
                     experience: playerData.experience,
                     hp: playerData.hp,
                     mana: playerData.mana,
                     rank: playerData.rank,
                 }
+            } else if (session.user) {
+                // Ensure id is set even if player data is not found
+                (session as ExtendedSession).user.id = token.sub || session.user.id
             }
 
             return session as ExtendedSession
@@ -90,3 +93,4 @@ const authOptions: NextAuthOptions = {
 }
 
 export default authOptions;
+

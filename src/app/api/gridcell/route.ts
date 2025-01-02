@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
     const lat = searchParams.get('lat')
     const lng = searchParams.get('lng')
 
-    if (!cellNumber || !lat || !lng) {
-        return NextResponse.json({ error: 'Cell number, latitude, and longitude are required' }, { status: 400 })
+    if (!cellNumber) {
+        return NextResponse.json({ error: 'Cell number is required' }, { status: 400 })
     }
 
     try {
@@ -83,80 +83,45 @@ export async function GET(request: NextRequest) {
 
         const cell = await collection.findOne({ cellNumber: parseInt(cellNumber) })
 
-        if (!cell) {
-            // Get all existing cell names to ensure uniqueness
-            const allCells = await collection.find().toArray()
-            const usedNames = new Set<string>(
-                allCells
-                    .filter(cell => cell.names && cell.names.portuguese)
-                    .map(cell => cell.names.portuguese)
-            )
-
-            // Generate unique name for the new cell
-            const names = generateUniqueCellName(wordList, usedNames)
-            if (!names) {
-                return NextResponse.json({ error: 'Could not generate unique cell name' }, { status: 500 })
-            }
-
-            // Create new cell with coordinates range
-            const latNum = parseFloat(lat)
-            const lngNum = parseFloat(lng)
-            const gridSizeInDegrees = 5 / 111000 // 5 meters in degrees
-
-            const newCell: GridCell = {
-                cellNumber: parseInt(cellNumber),
-                coordinates: {
-                    latRange: [latNum, latNum + gridSizeInDegrees],
-                    lngRange: [lngNum, lngNum + gridSizeInDegrees]
-                },
-                names,
-                data: {}
-            }
-
-            await collection.insertOne(newCell)
-            return NextResponse.json(newCell)
+        if (cell) {
+            return NextResponse.json(cell)
         }
 
-        // If cell exists but doesn't have names, generate them
-        if (!cell.names) {
-            const allCells = await collection.find().toArray()
-            const usedNames = new Set<string>(
-                allCells
-                    .filter(cell => cell.names && cell.names.portuguese)
-                    .map(cell => cell.names.portuguese)
-            )
-
-            const names = generateUniqueCellName(wordList, usedNames)
-            if (!names) {
-                return NextResponse.json({ error: 'Could not generate unique cell name' }, { status: 500 })
-            }
-
-            cell.names = names
-            await collection.updateOne(
-                { cellNumber: parseInt(cellNumber) },
-                { $set: { names: cell.names } }
-            )
+        if (!lat || !lng) {
+            return NextResponse.json({ error: 'Cell not found and lat/lng not provided for creation' }, { status: 404 })
         }
 
-        // If cell exists but coordinates are different, update the range
+        // If we reach here, the cell doesn't exist and we have lat/lng to create it
+        const allCells = await collection.find().toArray()
+        const usedNames = new Set<string>(
+            allCells
+                .filter(cell => cell.names && cell.names.portuguese)
+                .map(cell => cell.names.portuguese)
+        )
+
+        const names = generateUniqueCellName(wordList, usedNames)
+        if (!names) {
+            return NextResponse.json({ error: 'Could not generate unique cell name' }, { status: 500 })
+        }
+
         const latNum = parseFloat(lat)
         const lngNum = parseFloat(lng)
-        const gridSizeInDegrees = 5 / 111000
+        const gridSizeInDegrees = 5 / 111000 // 5 meters in degrees
 
-        if (!cell.coordinates) {
-            cell.coordinates = {
+        const newCell: GridCell = {
+            cellNumber: parseInt(cellNumber),
+            coordinates: {
                 latRange: [latNum, latNum + gridSizeInDegrees],
                 lngRange: [lngNum, lngNum + gridSizeInDegrees]
-            }
-            await collection.updateOne(
-                { cellNumber: parseInt(cellNumber) },
-                { $set: { coordinates: cell.coordinates } }
-            )
+            },
+            names,
+            data: {}
         }
 
-        return NextResponse.json(cell)
+        await collection.insertOne(newCell)
+        return NextResponse.json(newCell)
     } catch (error) {
-        console.error('Error fetching cell data:', error)
+        console.error('Error fetching or creating cell data:', error)
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }

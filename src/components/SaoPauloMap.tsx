@@ -5,10 +5,12 @@ import { useSession } from 'next-auth/react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import CellMenu from './CellMenu'
+import SearchBar from './SearchBar'
 import { saoPauloBoundary } from '../data/saoPauloBoundary'
 import { GridCell } from '@/models/GridCell'
 import { FaLocationArrow } from 'react-icons/fa'
 import debounce from 'lodash/debounce'
+import { toast } from 'react-toastify' // Import toast
 
 const SAO_PAULO_CENTER: L.LatLngTuple = [-23.5505, -46.6333]
 const INITIAL_ZOOM = 14
@@ -19,13 +21,14 @@ const SaoPauloMap = () => {
   const { data: session } = useSession()
   const mapRef = useRef<L.Map | null>(null)
   const gridLayerRef = useRef<L.LayerGroup | null>(null)
-  const governedCellsLayerRef = useRef<L.LayerGroup | null>(null) // Added governedCellsLayerRef
+  const governedCellsLayerRef = useRef<L.LayerGroup | null>(null)
   const selectedCellLayerRef = useRef<L.LayerGroup | null>(null)
   const locationMarkerRef = useRef<L.Marker | null>(null)
   const [mapReady, setMapReady] = useState(false)
   const [showGrid, setShowGrid] = useState(true)
   const [selectedCell, setSelectedCell] = useState<GridCell | null>(null)
   const [mapHeight, setMapHeight] = useState('100vh')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userLocation, setUserLocation] = useState<L.LatLng | null>(null)
   const [isLocating, setIsLocating] = useState(false)
   const [governedCells, setGovernedCells] = useState<number[]>([])
@@ -54,10 +57,10 @@ const SaoPauloMap = () => {
     }
   }, [])
 
-  const handleCellAction = useCallback(async (cellNumber: number, center: [number, number], cellCoords: [number, number]) => {
+  const handleCellAction = useCallback(async (cellNumber: number, center: [number, number]) => {
     try {
       const response = await fetch(
-        `/api/gridcell?cellNumber=${cellNumber}&lat=${cellCoords[0]}&lng=${cellCoords[1]}`
+        `/api/gridcell?cellNumber=${cellNumber}&lat=${center[0]}&lng=${center[1]}`
       )
       if (!response.ok) {
         throw new Error('Failed to fetch cell data')
@@ -67,6 +70,8 @@ const SaoPauloMap = () => {
       updateSelectedCellHighlight(cellData)
     } catch (error) {
       console.error('Error fetching cell data:', error)
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      toast.error(`Error: ${errorMessage}. Please try again.`)
     }
   }, [updateSelectedCellHighlight])
 
@@ -111,7 +116,7 @@ const SaoPauloMap = () => {
     const gridSizeInDegrees = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
 
     // Ajuste o tamanho mínimo da célula com base no zoom
-    const minCellSize = 10 / Math.pow(2, zoom)
+    //const minCellSize = 10 / Math.pow(2, zoom)
     if (zoom < 16 && !governedCells.length) return // Só retorna se o zoom for menor que 16 e não houver células governadas
 
     // Calcule o número de células para cobrir a área visível
@@ -150,7 +155,7 @@ const SaoPauloMap = () => {
           })
             .on('contextmenu', () => {
               const center = cellBounds.getCenter()
-              handleCellAction(cellNumber, [center.lat, center.lng], [cellLat, cellLon])
+              handleCellAction(cellNumber, [center.lat, center.lng])
             })
 
           if (isGoverned) {
@@ -169,7 +174,6 @@ const SaoPauloMap = () => {
     }, 100),
     [updateGrid]
   )
-
 
   const updateUserLocationMarker = useCallback((position: L.LatLng) => {
     if (!mapRef.current) return
@@ -252,7 +256,7 @@ const SaoPauloMap = () => {
       }).addTo(mapRef.current)
 
       gridLayerRef.current = L.layerGroup().addTo(mapRef.current)
-      governedCellsLayerRef.current = L.layerGroup().addTo(mapRef.current) // Added governedCellsLayerRef initialization
+      governedCellsLayerRef.current = L.layerGroup().addTo(mapRef.current)
       selectedCellLayerRef.current = L.layerGroup().addTo(mapRef.current)
 
       mapRef.current.on('zoomend', debouncedUpdateGrid)
@@ -262,7 +266,6 @@ const SaoPauloMap = () => {
 
       setMapReady(true)
 
-      // Inform the parent component that the map is ready
       if (typeof window !== 'undefined' && window.dispatchEvent) {
         window.dispatchEvent(new Event('mapReady'))
       }
@@ -293,10 +296,6 @@ const SaoPauloMap = () => {
   }, [selectedCell, updateSelectedCellHighlight])
 
   useEffect(() => {
-    //Removed renderGovernedCells()
-  }, [])
-
-  useEffect(() => {
     const updateMapHeight = () => {
       const playerMenu = document.getElementById('player-menu')
       if (playerMenu) {
@@ -311,32 +310,48 @@ const SaoPauloMap = () => {
     return () => window.removeEventListener('resize', updateMapHeight)
   }, [])
 
-  const navigateToCell = useCallback((cellNumber: number) => {
+  const navigateToCell = useCallback(async (cellNumber: number) => {
     if (!mapRef.current) return
 
-    const gridSizeInDegrees = GRID_SIZE / 111000
-    const latOffset = Math.floor(cellNumber / 1000) * gridSizeInDegrees
-    const lngOffset = (cellNumber % 1000) * gridSizeInDegrees
+    try {
+      const response = await fetch(`/api/gridcell?cellNumber=${cellNumber}`)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch cell data')
+      }
+      const cellData: GridCell = await response.json()
 
-    const cellLat = SAO_PAULO_CENTER[0] + latOffset
-    const cellLng = SAO_PAULO_CENTER[1] + lngOffset
+      if (cellData.coordinates) {
+        const cellCenter = [
+          (cellData.coordinates.latRange[0] + cellData.coordinates.latRange[1]) / 2,
+          (cellData.coordinates.lngRange[0] + cellData.coordinates.lngRange[1]) / 2
+        ]
 
-    mapRef.current.setView([cellLat, cellLng], 18)
+        mapRef.current.setView(cellCenter as L.LatLngExpression, 18)
 
-    // Highlight the cell
-    const cellBounds = L.latLngBounds(
-      [cellLat, cellLng],
-      [cellLat + gridSizeInDegrees, cellLng + gridSizeInDegrees]
-    )
+        const cellBounds = L.latLngBounds(
+          [cellData.coordinates.latRange[0], cellData.coordinates.lngRange[0]],
+          [cellData.coordinates.latRange[1], cellData.coordinates.lngRange[1]]
+        )
 
-    if (selectedCellLayerRef.current) {
-      selectedCellLayerRef.current.clearLayers()
-      L.rectangle(cellBounds, {
-        color: 'blue',
-        weight: 2,
-        fillColor: 'blue',
-        fillOpacity: 0.3
-      }).addTo(selectedCellLayerRef.current)
+        if (selectedCellLayerRef.current) {
+          selectedCellLayerRef.current.clearLayers()
+          L.rectangle(cellBounds, {
+            color: 'blue',
+            weight: 2,
+            fillColor: 'blue',
+            fillOpacity: 0.3
+          }).addTo(selectedCellLayerRef.current)
+        }
+
+        setSelectedCell(cellData)
+      } else {
+        console.error('Cell coordinates not found')
+        alert('Erro ao navegar para o bloco. Coordenadas não encontradas.')
+      }
+    } catch (error) {
+      console.error('Error fetching cell data:', error)
+      alert('Erro ao buscar dados do bloco. Por favor, tente novamente.')
     }
   }, [])
 
@@ -352,6 +367,23 @@ const SaoPauloMap = () => {
     }
   }, [navigateToCell])
 
+  const handleSearch = useCallback(async (query: string) => {
+    try {
+      const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`)
+      if (!response.ok) {
+        throw new Error('Failed to search for cell')
+      }
+      const data = await response.json()
+      if (data.cellNumber) {
+        navigateToCell(data.cellNumber)
+      } else {
+        alert('Bloco não encontrado')
+      }
+    } catch (error) {
+      console.error('Error searching for cell:', error)
+      alert('Erro ao buscar o bloco. Por favor, tente novamente.')
+    }
+  }, [navigateToCell])
 
   return (
     <div className="relative w-full" style={{ height: mapHeight }}>
@@ -362,6 +394,7 @@ const SaoPauloMap = () => {
         </div>
       )}
       <div className="absolute top-4 left-4 z-[1000] space-y-2">
+        <SearchBar onSearch={handleSearch} />
         <button
           className="bg-white px-4 py-2 rounded shadow hover:bg-gray-100 transition-colors"
           onClick={toggleGrid}
