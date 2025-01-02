@@ -257,7 +257,7 @@ const SaoPauloMap = () => {
 
       L.geoJSON(saoPauloBoundary, {
         style: {
-          color: 'red',
+          color: 'black',
           weight: 2,
           fillOpacity: 0
         }
