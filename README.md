@@ -100,6 +100,7 @@ Este projeto é proprietário. O uso, modificação ou redistribuição são per
 Todo:
 - Implementar REDIS
 - Definir Base de Dados
+- Implementar Backoffice para a Administração Pública
 
 **Contato:**
 - Email: me@danielniebraz.dev
