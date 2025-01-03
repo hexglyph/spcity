@@ -98,7 +98,8 @@ Este projeto é proprietário. O uso, modificação ou redistribuição são per
 ---
 
 Todo:
-Implementar REDIS
+- Implementar REDIS
+- Definir Base de Dados
 
 **Contato:**
 - Email: me@danielniebraz.dev
