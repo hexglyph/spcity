@@ -67,7 +67,7 @@ export default function PlayerMenu() {
 
     return (
         <>
-            <div id="player-menu" className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex justify-between items-center z-[9999]">
+            <div id="player-menu" className="fixed bottom-0 left-0 right-0 w-full bg-gray-800 text-white p-4 flex justify-between items-center z-[9999]">
                 <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center">
                         <FaUser className="text-2xl" />

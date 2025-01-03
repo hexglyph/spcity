@@ -27,7 +27,6 @@ const SaoPauloMap = () => {
   const [mapReady, setMapReady] = useState(false)
   const [showGrid, setShowGrid] = useState(true)
   const [selectedCell, setSelectedCell] = useState<GridCell | null>(null)
-  const [mapHeight, setMapHeight] = useState('100vh')
   const [isLocating, setIsLocating] = useState(false)
   const [governedCells, setGovernedCells] = useState<number[]>([])
 
@@ -293,20 +292,6 @@ const SaoPauloMap = () => {
     updateSelectedCellHighlight(selectedCell)
   }, [selectedCell, updateSelectedCellHighlight])
 
-  useEffect(() => {
-    const updateMapHeight = () => {
-      const playerMenu = document.getElementById('player-menu')
-      if (playerMenu) {
-        const menuHeight = playerMenu.offsetHeight
-        setMapHeight(`calc(100vh - ${menuHeight}px)`)
-      }
-    }
-
-    updateMapHeight()
-    window.addEventListener('resize', updateMapHeight)
-
-    return () => window.removeEventListener('resize', updateMapHeight)
-  }, [])
 
   const navigateToCell = useCallback(async (cellNumber: number) => {
     if (!mapRef.current) return
@@ -384,7 +369,7 @@ const SaoPauloMap = () => {
   }, [navigateToCell])
 
   return (
-    <div className="relative w-full" style={{ height: mapHeight }}>
+    <div className="relative w-full h-full">
       <div id="map" className="w-full h-full" />
       {!mapReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
