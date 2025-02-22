@@ -1,5 +1,66 @@
 # SPCITY
 
+SPCITY is an application designed to facilitate the interaction between citizens and the São Paulo municipal government, promoting the registration, monitoring, and management of urban demands in a simplified, efficient, and transparent manner.
+
+## 📜 About the Project
+
+Interacting with the government is often bureaucratic and demotivating for citizens. SPCITY aims to revolutionize this environment, allowing users to report urban problems intuitively and track their resolutions in real time.
+
+### Main Features
+- Registration of urban demands using simplified geolocation.
+- Visualization of open demands on an interactive map.
+- Continuous feedback system.
+- Engagement incentives through gamification.
+- User-friendly and accessible interface.
+
+## 🚀 Technologies Used
+
+- **Frontend**: Next.js 15.
+- **Backend**: MongoDB and custom APIs.
+- **Geolocation**: Leaflet for rendering interactive maps.
+- **Authentication**: NextAuth with MongoDB adapter.
+- **Styling**: TailwindCSS with animation support.
+
+## 📦 Installation
+
+### Prerequisites
+- Node.js version 22 or higher (recommended for compatibility).
+- Configured and running MongoDB.
+
+### Step-by-Step
+
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/hexglyph/spcity.git
+    cd spcity
+    ```
+
+2. Install dependencies:
+    ```bash
+    bun install
+    ```
+
+3. Configure the environment variables:
+    Create a `.env` file at the root of the project and add the required variables, such as:
+    ```env
+    MONGODB_URI=mongodb+srv://your-username:password@cluster.mongodb.net/spcity
+    NEXTAUTH_SECRET=your_secret_key
+    ```
+
+4. Start the development server:
+    ```bash
+    bun run dev
+    ```
+
+5. Open the application in your browser at [http://localhost:3000](http://localhost:3000).
+
+## 📋 Project Structure
+
+
+
+
+# SPCITY
+
 SPCITY é uma aplicação para facilitar a interação dos cidadãos com o governo municipal de São Paulo, promovendo o registro, acompanhamento e gestão de demandas urbanas de forma simplificada, eficiente e transparente.
 
 ## 📜 Sobre o Projeto
@@ -24,8 +85,7 @@ A interação com o governo é muitas vezes burocrática e desmotivadora para os
 ## 📦 Como Instalar
 
 ### Pré-requisitos
-- [Bun](https://bun.sh/) instalado no sistema.
-- Node.js versão mínima 18 (recomendado para compatibilidade).
+- Node.js versão mínima 22 (recomendado para compatibilidade).
 - MongoDB configurado e em execução.
 
 ### Passo a Passo
@@ -68,7 +128,6 @@ spcity/
 │   └── api/               # APIs customizadas
 ├── .env                   # Variáveis de ambiente
 ├── package.json           # Gerenciador de dependências
-├── bun.lockb              # Arquivo de lock do Bun
 └── tailwind.config.js     # Configuração do TailwindCSS
 ```
 
@@ -98,10 +157,10 @@ Este projeto é proprietário. O uso, modificação ou redistribuição são per
 ---
 
 Todo:
-- Implementar REDIS
 - Definir Base de Dados
 - Implementar Backoffice para a Administração Pública
+- Tailwind 4
 
 **Contato:**
 - Email: me@danielniebraz.dev
-- LinkedIn: [[Seu Perfil](https://www.linkedin.com/in/danielniebraz/)](https://www.linkedin.com/in/danielniebraz/)
+- LinkedIn: [(https://www.linkedin.com/in/danielniebraz/)](https://www.linkedin.com/in/danielniebraz/)
