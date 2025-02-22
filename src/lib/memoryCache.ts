@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type CacheItem<T> = {
     value: T;
     expiry: number;

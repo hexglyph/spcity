@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as turf from "@turf/turf"
 
 const SAO_PAULO_CENTER = { lat: -23.555153873167974, lng: -46.51717973826744 }

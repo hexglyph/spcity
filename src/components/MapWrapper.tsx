@@ -21,7 +21,7 @@ export default function MapWrapper() {
         const topMenu = document.querySelector("[data-topmenu]")
 
         if (playerMenu && topMenu) {
-            const resizeObserver = new ResizeObserver((entries) => {
+            const resizeObserver = new ResizeObserver(() => {
                 const playerMenuHeight = playerMenu.offsetHeight
                 const topMenuHeight = topMenu.clientHeight
                 setMapHeight(`calc(100vh - ${playerMenuHeight + topMenuHeight}px)`)

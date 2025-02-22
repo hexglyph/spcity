@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react"
@@ -21,8 +22,6 @@ declare global {
 const SAO_PAULO_CENTER = { lat: -23.555153873167974, lng: -46.51717973826744 }
 const INITIAL_ZOOM = 14
 const MAX_ZOOM = 22
-const GRID_SIZE = 5 // meters
-const GRID_SIZE_DEGREES = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
 
 const mapContainerStyle = {
   width: "100%",
@@ -82,7 +81,7 @@ const SaoPauloMap = () => {
   )
 
   const handleCellAction = useCallback(
-    async (cellNumber: number, latLng: google.maps.LatLng) => {
+    async (cellNumber: number) => {
       try {
         const response = await fetch(`/api/gridcell?cellNumber=${cellNumber}`)
         if (!response.ok) {
@@ -105,7 +104,7 @@ const SaoPauloMap = () => {
   )
 
   const saoPauloBoundaryPolygon = useMemo(() => {
-    const coords = saoPauloBoundary.features[0].geometry.coordinates[0]
+    const coords = (saoPauloBoundary.features[0].geometry as any).coordinates[0]
     const polygon = turf.polygon([coords])
     const simplifiedPolygon = turf.simplify(polygon, { tolerance: 0.0001, highQuality: true })
     return {
@@ -134,8 +133,8 @@ const SaoPauloMap = () => {
         west: sw.lng(),
       },
       center: {
-        lat: center.lat(),
-        lng: center.lng(),
+        lat: center?.lat(),
+        lng: center?.lng(),
       },
       zoom,
       governedCells,
@@ -312,7 +311,7 @@ const SaoPauloMap = () => {
           })
 
           rectangle.addListener("click", (e: google.maps.MapMouseEvent) => {
-            if (e.latLng) handleCellAction(cell.cellNumber, e.latLng)
+            if (e.latLng) handleCellAction(cell.cellNumber)
           })
 
           if (cell.isGoverned) {
@@ -402,7 +401,7 @@ const SaoPauloMap = () => {
     (map: google.maps.Map) => {
       setMap(map)
       const boundaryPolygon = new google.maps.Polygon({
-        paths: saoPauloBoundaryPolygon.original.map((coord) => ({ lat: coord[1], lng: coord[0] })),
+        paths: saoPauloBoundaryPolygon.original.map((coord: any) => ({ lat: coord[1], lng: coord[0] })),
         strokeColor: "black",
         strokeWeight: 2,
         fillOpacity: 0,
@@ -440,7 +439,7 @@ const SaoPauloMap = () => {
           disabled={isLocating}
         >
           <FaLocationArrow className="mr-2" />
-          {isLocating ? "Localizando..." : "Encontrar-me"}
+          {isLocating ? "Localizando..." : "Minha localização"}
         </button>
       </div>
       {selectedCell && (

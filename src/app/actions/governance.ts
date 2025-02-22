@@ -72,8 +72,8 @@ export async function claimGovernance(cellId: string, position: Position) {
             updateGovernedCells(
                 {
                     cellNumber: Number.parseInt(cellId),
-                    name: result.governance.governorName, // Assuming the API returns the cell name
-                    expiresAt: result.governance.expiresAt,
+                    name: result.governance.governorName || "-",
+                    expiresAt: result.governance.expiresAt.toISOString(),
                 },
                 "add",
             )

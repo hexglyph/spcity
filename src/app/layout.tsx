@@ -6,9 +6,9 @@ import "./globals.css"
 import { Inter } from "next/font/google"
 import { Providers } from "@/components/Providers"
 import PlayerMenu from "@/components/PlayerMenu"
-import LoadingScreen from "@/components/LoadingScreen"
+//import LoadingScreen from "@/components/LoadingScreen"
 import TopMenu from "@/components/TopMenu"
-import { useState, useEffect } from "react"
+//import { useEffect } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,11 +17,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [isLoading, setIsLoading] = useState(true)
+  //const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    let mapReady = false
+  /*useEffect(() => {
     let playerDataReady = false
+    let mapReady = false
+    
 
     const checkAllReady = () => {
       if (mapReady && playerDataReady) {
@@ -47,6 +48,7 @@ export default function RootLayout({
       window.removeEventListener("playerDataReady", handlePlayerDataReady)
     }
   }, [])
+  */
 
   return (
     <html lang="pt-BR">

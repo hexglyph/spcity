@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from '@/lib/mongodb'
 import { GridCell } from '@/models/GridCell'
 
-const SAO_PAULO_CENTER: [number, number] = [-23.555153873167974, -46.51717973826744]
-const GRID_SIZE = 5 // meters
-const GRID_SIZE_DEGREES = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
+//const SAO_PAULO_CENTER: [number, number] = [-23.555153873167974, -46.51717973826744]
+//const GRID_SIZE = 5 // meters
+//const GRID_SIZE_DEGREES = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
