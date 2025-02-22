@@ -22,6 +22,16 @@ export interface GridCell {
     data: Record<string, unknown>
 }
 
+export interface ExtendedGridCell extends GridCell {
+    governance?: {
+        governorId: string
+        governorName: string
+        claimedAt: Date
+        expiresAt: Date
+    }
+}
+
+
 export interface WordList {
     portuguese: string[]
     english: string[]

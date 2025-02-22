@@ -1,13 +1,16 @@
-'use client'
+"use client"
 
-import './globals.css'
-import { Inter } from 'next/font/google'
-import { Providers } from '@/components/Providers'
-import PlayerMenu from '@/components/PlayerMenu'
-import LoadingScreen from '@/components/LoadingScreen'
-import { useState, useEffect } from 'react'
+import type React from "react"
 
-const inter = Inter({ subsets: ['latin'] })
+import "./globals.css"
+import { Inter } from "next/font/google"
+import { Providers } from "./components/Providers"
+import PlayerMenu from "./components/PlayerMenu"
+import LoadingScreen from "./components/LoadingScreen"
+import TopMenu from "./components/TopMenu"
+import { useState, useEffect } from "react"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export default function RootLayout({
   children,
@@ -17,12 +20,6 @@ export default function RootLayout({
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-
-    if (window.location.pathname === '/termos' || window.location.pathname === '/privacidade') {
-      setIsLoading(false)
-      return
-    }
-
     let mapReady = false
     let playerDataReady = false
 
@@ -42,12 +39,12 @@ export default function RootLayout({
       checkAllReady()
     }
 
-    window.addEventListener('mapReady', handleMapReady)
-    window.addEventListener('playerDataReady', handlePlayerDataReady)
+    window.addEventListener("mapReady", handleMapReady)
+    window.addEventListener("playerDataReady", handlePlayerDataReady)
 
     return () => {
-      window.removeEventListener('mapReady', handleMapReady)
-      window.removeEventListener('playerDataReady', handlePlayerDataReady)
+      window.removeEventListener("mapReady", handleMapReady)
+      window.removeEventListener("playerDataReady", handlePlayerDataReady)
     }
   }, [])
 
@@ -55,8 +52,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
+          <TopMenu />
           <LoadingScreen isLoading={isLoading} />
-          {children}
+          <main className="pt-16">
+            {" "}
+            {/* Add padding-top to account for the fixed TopMenu */}
+            {children}
+          </main>
           <PlayerMenu />
         </Providers>
       </body>

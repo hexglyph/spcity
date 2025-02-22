@@ -31,3 +31,27 @@ class MemoryCache<T> {
 
 export const cellCache = new MemoryCache<unknown>();
 
+export class Cache {
+    private cache = new Map<string, { value: any; expiry: number }>();
+
+    set<T>(key: string, value: T, duration: number): void {
+        this.cache.set(key, { value, expiry: Date.now() + duration });
+    }
+
+    get<T>(key: string): T | undefined {
+        const item = this.cache.get(key);
+        if (item && Date.now() < item.expiry) {
+            return item.value as T;
+        }
+        this.cache.delete(key);
+        return undefined;
+    }
+
+    delete(key: string): void {
+        this.cache.delete(key);
+    }
+
+    clear(): void {
+        this.cache.clear();
+    }
+}

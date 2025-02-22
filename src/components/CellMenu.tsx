@@ -1,16 +1,26 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { GridCell } from '@/models/GridCell'
 import { FaMapMarkerAlt, FaInfoCircle, FaHistory } from 'react-icons/fa'
 import { GovernancePanel } from './GovernancePanel'
 
 interface CellMenuProps {
     cellNumber: number
-    centerCoords?: [number, number]
     cellData?: GridCell
     onClose: () => void
 }
 
 const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) => {
+    console.log('CellMenu rendered:', { cellNumber, cellData })
+
+    useEffect(() => {
+        console.log('CellMenu mounted or updated:', { cellNumber, cellData })
+    }, [cellNumber, cellData])
+
+    if (!cellData) {
+        console.log('No cell data, not rendering CellMenu')
+        return null
+    }
+
     const getLocalizedName = () => {
         if (!cellData?.names) return ''
 
@@ -30,13 +40,13 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
     return (
         <div className="fixed right-0 top-0 h-full w-80 bg-gray-800 text-white shadow-lg p-6 z-[2000] overflow-y-auto">
             <button
-                title='Fechar'
                 className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
                 onClick={onClose}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
+                <span className="sr-only">Fechar</span>
             </button>
             <h2 className="text-2xl font-bold mb-6 text-center">Detalhes do Bloco</h2>
 
@@ -76,8 +86,7 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
 
                 <div className="bg-gray-700 p-4 rounded-lg">
                     <h3 className="text-xl font-semibold mb-2">Coordenadas</h3>
-                    {/*
-                    cellData?.coordinates ? (
+                    {cellData?.coordinates ? (
                         <>
                             <div className="mb-3">
                                 <p className="text-sm font-semibold mb-1 text-yellow-400">Latitude:</p>
@@ -96,13 +105,10 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
                         </>
                     ) : (
                         <p className="text-sm italic text-gray-400">Coordenadas não disponíveis</p>
-                    )
-                        */
-                    }
+                    )}
                 </div>
             </div>
             <button
-                title='Abrir Demanda'
                 className="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
                 onClick={() => {/* TODO: Implement open demand functionality */ }}
             >

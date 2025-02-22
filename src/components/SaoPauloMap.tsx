@@ -1,388 +1,438 @@
-'use client'
+"use client"
 
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import CellMenu from './CellMenu'
-import SearchBar from './SearchBar'
-import { saoPauloBoundary } from '../data/saoPauloBoundary'
-import { GridCell } from '@/models/GridCell'
-import { FaLocationArrow } from 'react-icons/fa'
-import debounce from 'lodash/debounce'
-import { toast } from 'react-toastify'
+import { useEffect, useRef, useState, useCallback, useMemo } from "react"
+import { useSession } from "next-auth/react"
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api"
+import CellMenu from "./CellMenu"
+import SearchBar from "./SearchBar"
+import { saoPauloBoundary } from "../data/pilotoBoundary"
+import type { GridCell } from "@/models/GridCell"
+import { FaLocationArrow } from "react-icons/fa"
+import debounce from "lodash/debounce"
+import { toast } from "react-toastify"
+import * as turf from "@turf/turf"
 
-const SAO_PAULO_CENTER: L.LatLngTuple = [-23.5505, -46.6333]
+declare global {
+  interface Window {
+    google: typeof google
+  }
+}
+
+const SAO_PAULO_CENTER = { lat: -23.555153873167974, lng: -46.51717973826744 }
 const INITIAL_ZOOM = 14
 const MAX_ZOOM = 22
 const GRID_SIZE = 5 // meters
+const GRID_SIZE_DEGREES = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
+
+const mapContainerStyle = {
+  width: "100%",
+  height: "100%",
+}
 
 const SaoPauloMap = () => {
   const { data: session } = useSession()
-  const mapRef = useRef<L.Map | null>(null)
-  const gridLayerRef = useRef<L.LayerGroup | null>(null)
-  const governedCellsLayerRef = useRef<L.LayerGroup | null>(null)
-  const selectedCellLayerRef = useRef<L.LayerGroup | null>(null)
-  const locationMarkerRef = useRef<L.Marker | null>(null)
-  const [mapReady, setMapReady] = useState(false)
+  const [map, setMap] = useState<google.maps.Map | null>(null)
+  const gridLayerRef = useRef<Map<number, google.maps.Rectangle>>(new Map())
+  const governedCellsLayerRef = useRef<Map<number, google.maps.Rectangle>>(new Map())
+  const selectedCellLayerRef = useRef<google.maps.Rectangle | null>(null)
+  const locationMarkerRef = useRef<google.maps.Marker | null>(null)
   const [showGrid, setShowGrid] = useState(true)
   const [selectedCell, setSelectedCell] = useState<GridCell | null>(null)
   const [isLocating, setIsLocating] = useState(false)
   const [governedCells, setGovernedCells] = useState<number[]>([])
+  const workerRef = useRef<Worker | null>(null)
+
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+  })
 
   const toggleGrid = () => {
     setShowGrid((prev) => !prev)
   }
 
-  const updateSelectedCellHighlight = useCallback((cell: GridCell | null) => {
-    if (!mapRef.current || !selectedCellLayerRef.current) return
+  const updateSelectedCellHighlight = useCallback(
+    (cell: GridCell | null) => {
+      if (!map) return
 
-    selectedCellLayerRef.current.clearLayers()
-
-    if (cell) {
-      const cellBounds = L.latLngBounds(
-        [cell.coordinates.latRange[0], cell.coordinates.lngRange[0]],
-        [cell.coordinates.latRange[1], cell.coordinates.lngRange[1]]
-      )
-
-      L.rectangle(cellBounds, {
-        color: 'blue',
-        weight: 2,
-        fillColor: 'blue',
-        fillOpacity: 0.3
-      }).addTo(selectedCellLayerRef.current)
-    }
-  }, [])
-
-  const handleCellAction = useCallback(async (cellNumber: number, center: [number, number]) => {
-    try {
-      const gridSizeInDegrees = GRID_SIZE / 111000
-      const adjustedLat = Math.floor((center[0] - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[0]
-      const adjustedLng = Math.floor((center[1] - SAO_PAULO_CENTER[1]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[1]
-
-      const response = await fetch(
-        `/api/gridcell?cellNumber=${cellNumber}&lat=${adjustedLat}&lng=${adjustedLng}`
-      )
-      if (!response.ok) {
-        throw new Error('Failed to fetch cell data')
+      if (selectedCellLayerRef.current) {
+        selectedCellLayerRef.current.setMap(null)
+        selectedCellLayerRef.current = null
       }
-      const cellData: GridCell = await response.json()
-      setSelectedCell(cellData)
-      updateSelectedCellHighlight(cellData)
-    } catch (error) {
-      console.error('Error fetching cell data:', error)
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
-      toast.error(`Error: ${errorMessage}. Please try again.`)
-    }
-  }, [updateSelectedCellHighlight])
 
-  const isPointInPolygon = (point: number[], polygon: number[][]) => {
-    let inside = false
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-      const xi = polygon[i][0], yi = polygon[i][1]
-      const xj = polygon[j][0], yj = polygon[j][1]
-      const intersect = ((yi > point[1]) !== (yj > point[1])) &&
-        (point[0] < (xj - xi) * (point[1] - yi) / (yj - yi) + xi)
-      if (intersect) inside = !inside
-    }
-    return inside
-  }
+      if (cell) {
+        const cellBounds = {
+          north: cell.coordinates.latRange[1],
+          south: cell.coordinates.latRange[0],
+          east: cell.coordinates.lngRange[1],
+          west: cell.coordinates.lngRange[0],
+        }
 
-  const isRectangleInPolygon = useCallback((rect: L.LatLngBounds, geoJSON: GeoJSON.FeatureCollection) => {
-    const feature = geoJSON.features[0]
-    if (feature.geometry.type !== 'Polygon') {
-      console.error('Expected Polygon geometry')
-      return false
-    }
-    const polygon = feature.geometry.coordinates[0]
-    const corners = [
-      rect.getNorthWest(),
-      rect.getNorthEast(),
-      rect.getSouthEast(),
-      rect.getSouthWest()
-    ]
+        selectedCellLayerRef.current = new google.maps.Rectangle({
+          bounds: cellBounds,
+          map,
+          fillColor: "blue",
+          fillOpacity: 0.3,
+          strokeColor: "blue",
+          strokeWeight: 2,
+        })
+      }
+    },
+    [map],
+  )
 
-    return corners.some(corner => isPointInPolygon([corner.lng, corner.lat], polygon))
+  const handleCellAction = useCallback(
+    async (cellNumber: number, latLng: google.maps.LatLng) => {
+      try {
+        const response = await fetch(`/api/gridcell?cellNumber=${cellNumber}`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch cell data")
+        }
+        const cellData: GridCell | null = await response.json()
+        if (cellData) {
+          setSelectedCell(cellData)
+          updateSelectedCellHighlight(cellData)
+        } else {
+          console.log("Cell not found in database")
+          toast.error("Célula não encontrada no banco de dados")
+        }
+      } catch (error) {
+        console.error("Error fetching cell data:", error)
+        toast.error(`Error: ${error instanceof Error ? error.message : "Unknown error"}. Please try again.`)
+      }
+    },
+    [updateSelectedCellHighlight],
+  )
+
+  const saoPauloBoundaryPolygon = useMemo(() => {
+    const coords = saoPauloBoundary.features[0].geometry.coordinates[0]
+    const polygon = turf.polygon([coords])
+    const simplifiedPolygon = turf.simplify(polygon, { tolerance: 0.0001, highQuality: true })
+    return {
+      original: coords,
+      simplified: simplifiedPolygon.geometry.coordinates[0],
+    }
   }, [])
 
   const updateGrid = useCallback(() => {
-    if (!mapRef.current || !gridLayerRef.current || !governedCellsLayerRef.current) return
+    console.log("Updating grid with governed cells:", governedCells)
+    if (!map || !workerRef.current) return
 
-    const zoom = mapRef.current.getZoom()
-    const bounds = mapRef.current.getBounds()
+    const bounds = map.getBounds()
+    const zoom = map.getZoom()
+    if (!bounds || zoom === undefined) return
 
-    gridLayerRef.current.clearLayers()
-    governedCellsLayerRef.current.clearLayers()
+    const ne = bounds.getNorthEast()
+    const sw = bounds.getSouthWest()
+    const center = map.getCenter()
 
-    const gridSizeInDegrees = GRID_SIZE / 111000 // Approximate conversion from meters to degrees
-
-    if (zoom < 16 && !governedCells.length) return // Só retorna se o zoom for menor que 16 e não houver células governadas
-
-    // Calcule o número de células para cobrir a área visível
-    const cellsX = Math.ceil((bounds.getEast() - bounds.getWest()) / gridSizeInDegrees)
-    const cellsY = Math.ceil((bounds.getNorth() - bounds.getSouth()) / gridSizeInDegrees)
-
-    // Limite o número máximo de células a serem renderizadas
-    const maxCells = 10000
-    if (cellsX * cellsY > maxCells) return
-
-    // Calculate the starting point for the grid, aligned with São Paulo's center
-    const startLat = Math.floor((bounds.getSouth() - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[0]
-    const startLon = Math.floor((bounds.getWest() - SAO_PAULO_CENTER[1]) / gridSizeInDegrees) * gridSizeInDegrees + SAO_PAULO_CENTER[1]
-
-    for (let i = 0; i <= cellsY; i++) {
-      for (let j = 0; j <= cellsX; j++) {
-        const cellLat = startLat + i * gridSizeInDegrees
-        const cellLon = startLon + j * gridSizeInDegrees
-
-        const cellBounds = L.latLngBounds(
-          [cellLat, cellLon],
-          [cellLat + gridSizeInDegrees, cellLon + gridSizeInDegrees]
-        )
-
-        if (isRectangleInPolygon(cellBounds, saoPauloBoundary)) {
-          const cellNumber = Math.floor((cellLat - SAO_PAULO_CENTER[0]) / gridSizeInDegrees) * 1000 +
-            Math.floor((cellLon - SAO_PAULO_CENTER[1]) / gridSizeInDegrees)
-
-          const isGoverned = governedCells.includes(cellNumber)
-
-          const rectangle = L.rectangle(cellBounds, {
-            color: isGoverned ? 'green' : 'red',
-            weight: 1,
-            fillColor: isGoverned ? 'green' : 'transparent',
-            fillOpacity: isGoverned ? 0.3 : 0
-          })
-            .on('contextmenu', () => {
-              const center = cellBounds.getCenter()
-              handleCellAction(cellNumber, [center.lat, center.lng])
-            })
-
-          if (isGoverned) {
-            rectangle.addTo(governedCellsLayerRef.current)
-          } else if (zoom >= 16 && showGrid) {
-            rectangle.addTo(gridLayerRef.current)
-          }
-        }
-      }
-    }
-  }, [showGrid, handleCellAction, isRectangleInPolygon, governedCells])
-
-  const debouncedUpdateGrid = useCallback(
-    debounce(() => {
-      updateGrid()
-    }, 100),
-    [updateGrid]
-  )
-
-  const updateUserLocationMarker = useCallback((position: L.LatLng) => {
-    if (!mapRef.current) return
-
-    if (!locationMarkerRef.current) {
-      locationMarkerRef.current = L.marker(position, {
-        icon: L.divIcon({
-          className: 'w-5 h-5 rounded-full bg-blue-500 border-2 border-white shadow-md',
-          html: '<div class="w-full h-full rounded-full bg-blue-500 opacity-70 animate-ping"></div>',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10]
-        })
-      }).addTo(mapRef.current)
-    } else {
-      locationMarkerRef.current.setLatLng(position)
-    }
-  }, [])
-
-  const handleLocationFound = useCallback((e: L.LocationEvent) => {
-    const { lat, lng } = e.latlng
-    updateUserLocationMarker(e.latlng)
-    if (mapRef.current) {
-      mapRef.current.flyTo([lat, lng], 18)
-    }
-    setIsLocating(false)
-  }, [updateUserLocationMarker])
-
-  const handleLocationError = useCallback((e: L.ErrorEvent) => {
-    console.error('Error getting location:', e.message)
-    setIsLocating(false)
-    // You might want to show an error message to the user here
-  }, [])
-
-  const locateUser = useCallback(() => {
-    if (!mapRef.current) return
-
-    setIsLocating(true)
-    mapRef.current.locate({ setView: false, maxZoom: 18 })
-  }, [])
+    workerRef.current.postMessage({
+      bounds: {
+        north: ne.lat(),
+        south: sw.lat(),
+        east: ne.lng(),
+        west: sw.lng(),
+      },
+      center: {
+        lat: center.lat(),
+        lng: center.lng(),
+      },
+      zoom,
+      governedCells,
+      saoPauloBoundary: saoPauloBoundaryPolygon.simplified,
+      showGrid,
+    })
+  }, [map, governedCells, saoPauloBoundaryPolygon, showGrid])
 
   const fetchGovernedCells = useCallback(async () => {
     if (!session?.user?.id) return
 
     try {
+      const storedCells = localStorage.getItem("governedCells")
+      const storedTimestamp = localStorage.getItem("governedCellsTimestamp")
+
+      if (storedCells && storedTimestamp) {
+        const parsedCells = JSON.parse(storedCells)
+        const timestamp = Number.parseInt(storedTimestamp, 10)
+
+        // Check if the stored data is less than 15 minutes old
+        if (Date.now() - timestamp < 15 * 60 * 1000) {
+          console.log("Using stored governed cells:", parsedCells)
+          return parsedCells.map((cell: any) => cell.cellNumber)
+        }
+      }
+
       const response = await fetch(`/api/player/governed-cells?userId=${session.user.id}`)
       if (!response.ok) {
-        throw new Error('Failed to fetch governed cells')
+        throw new Error("Failed to fetch governed cells")
       }
       const data = await response.json()
-      setGovernedCells(data.governedCells)
+      const cells = data.governedCells
+        .map((cell: { cellNumber: number | string }) => {
+          const parsed = Number(cell.cellNumber)
+          return isNaN(parsed) ? null : parsed
+        })
+        .filter((num: number | null): num is number => num !== null)
+
+      console.log("Governed cells fetched:", cells)
+
+      // Store the fetched data in localStorage
+      localStorage.setItem("governedCells", JSON.stringify(data.governedCells))
+      localStorage.setItem("governedCellsTimestamp", Date.now().toString())
+
+      return cells
     } catch (error) {
-      console.error('Error fetching governed cells:', error)
+      console.error("Error fetching governed cells:", error)
+      toast.error("Failed to fetch governed cells. Please try again.")
+      return []
     }
   }, [session?.user?.id])
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !mapRef.current) {
-      mapRef.current = L.map('map', {
-        center: SAO_PAULO_CENTER,
-        zoom: INITIAL_ZOOM,
-        zoomControl: false,
-        maxZoom: MAX_ZOOM
-      })
+  const debouncedUpdateGrid = useMemo(() => debounce(updateGrid, 500), [updateGrid])
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: MAX_ZOOM
-      }).addTo(mapRef.current)
+  const updateUserLocationMarker = useCallback(
+    (position: google.maps.LatLng) => {
+      if (!map) return
 
-      L.control.zoom({ position: 'topright' }).addTo(mapRef.current)
+      if (!locationMarkerRef.current) {
+        locationMarkerRef.current = new google.maps.Marker({
+          position,
+          map,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: "#3388ff",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 2,
+          },
+        })
+      } else {
+        locationMarkerRef.current.setPosition(position)
+      }
+    },
+    [map],
+  )
 
-      L.geoJSON(saoPauloBoundary, {
-        style: {
-          color: 'red',
-          weight: 2,
-          fillOpacity: 0
+  const navigateToCell = useCallback(
+    async (cellNumber: number) => {
+      try {
+        const response = await fetch(`/api/gridcell?cellNumber=${cellNumber}`)
+        if (!response.ok) {
+          throw new Error("Failed to fetch cell data")
         }
-      }).addTo(mapRef.current)
-
-      gridLayerRef.current = L.layerGroup().addTo(mapRef.current)
-      governedCellsLayerRef.current = L.layerGroup().addTo(mapRef.current)
-      selectedCellLayerRef.current = L.layerGroup().addTo(mapRef.current)
-
-      mapRef.current.on('zoomend', debouncedUpdateGrid)
-      mapRef.current.on('moveend', debouncedUpdateGrid)
-      mapRef.current.on('locationfound', handleLocationFound)
-      mapRef.current.on('locationerror', handleLocationError)
-
-      setMapReady(true)
-
-      if (typeof window !== 'undefined' && window.dispatchEvent) {
-        window.dispatchEvent(new Event('mapReady'))
+        const cellData: GridCell | null = await response.json()
+        if (cellData && cellData.coordinates && map) {
+          const center = new google.maps.LatLng(
+            (cellData.coordinates.latRange[0] + cellData.coordinates.latRange[1]) / 2,
+            (cellData.coordinates.lngRange[0] + cellData.coordinates.lngRange[1]) / 2,
+          )
+          map.panTo(center)
+          map.setZoom(18)
+          setSelectedCell(cellData)
+          updateSelectedCellHighlight(cellData)
+        }
+      } catch (error) {
+        console.error("Error navigating to cell:", error)
+        toast.error("Erro ao navegar para o bloco")
       }
-    }
+    },
+    [map, updateSelectedCellHighlight],
+  )
 
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
+  const handleLocationFound = useCallback(
+    (position: GeolocationPosition) => {
+      const { latitude, longitude } = position.coords
+      const latLng = new google.maps.LatLng(latitude, longitude)
+      updateUserLocationMarker(latLng)
+      if (map) {
+        map.panTo(latLng)
+        map.setZoom(18)
       }
-    }
-  }, [debouncedUpdateGrid, handleLocationFound, handleLocationError])
+      setIsLocating(false)
+    },
+    [map, updateUserLocationMarker],
+  )
+
+  const handleLocationError = useCallback((error: GeolocationPositionError) => {
+    console.error("Error getting location:", error.message)
+    setIsLocating(false)
+    toast.error("Erro ao obter localização. Por favor, verifique suas configurações de localização.")
+  }, [])
+
+  const locateUser = useCallback(() => {
+    setIsLocating(true)
+    navigator.geolocation.getCurrentPosition(handleLocationFound, handleLocationError)
+  }, [handleLocationFound, handleLocationError])
 
   useEffect(() => {
     if (session?.user?.id) {
-      fetchGovernedCells()
+      fetchGovernedCells().then((cells) => {
+        setGovernedCells(cells)
+        updateGrid()
+      })
     }
-  }, [session?.user?.id, fetchGovernedCells])
+  }, [session?.user?.id, fetchGovernedCells, updateGrid])
 
   useEffect(() => {
-    if (mapRef.current && gridLayerRef.current) {
+    if (map) {
       updateGrid()
     }
-  }, [updateGrid, governedCells])
+  }, [map, updateGrid])
 
   useEffect(() => {
-    updateSelectedCellHighlight(selectedCell)
-  }, [selectedCell, updateSelectedCellHighlight])
-
-
-  const navigateToCell = useCallback(async (cellNumber: number) => {
-    if (!mapRef.current) return
-
-    try {
-      const response = await fetch(`/api/gridcell?cellNumber=${cellNumber}`)
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to fetch cell data')
-      }
-      const cellData: GridCell = await response.json()
-
-      if (cellData.coordinates) {
-        const cellCenter = [
-          (cellData.coordinates.latRange[0] + cellData.coordinates.latRange[1]) / 2,
-          (cellData.coordinates.lngRange[0] + cellData.coordinates.lngRange[1]) / 2
-        ]
-
-        mapRef.current.setView(cellCenter as L.LatLngExpression, 18)
-
-        const cellBounds = L.latLngBounds(
-          [cellData.coordinates.latRange[0], cellData.coordinates.lngRange[0]],
-          [cellData.coordinates.latRange[1], cellData.coordinates.lngRange[1]]
-        )
-
-        if (selectedCellLayerRef.current) {
-          selectedCellLayerRef.current.clearLayers()
-          L.rectangle(cellBounds, {
-            color: 'blue',
-            weight: 2,
-            fillColor: 'blue',
-            fillOpacity: 0.3
-          }).addTo(selectedCellLayerRef.current)
-        }
-
-        setSelectedCell(cellData)
-      } else {
-        console.error('Cell coordinates not found')
-        alert('Erro ao navegar para o bloco. Coordenadas não encontradas.')
-      }
-    } catch (error) {
-      console.error('Error fetching cell data:', error)
-      alert('Erro ao buscar dados do bloco. Por favor, tente novamente.')
+    if (map && governedCells.length > 0 && governedCells.every((cell) => !isNaN(cell))) {
+      console.log("Updating grid due to governedCells change:", governedCells)
+      updateGrid()
     }
-  }, [])
+  }, [map, governedCells, updateGrid])
 
+  useEffect(() => {
+    workerRef.current = new Worker(new URL("@/app/workers/gridWorker.ts", import.meta.url))
+
+    workerRef.current.onmessage = (e: MessageEvent) => {
+      const cells = e.data
+      const visibleCellNumbers = new Set<number>()
+
+      cells.forEach((cell: any) => {
+        visibleCellNumbers.add(cell.cellNumber)
+        let rectangle = cell.isGoverned
+          ? governedCellsLayerRef.current.get(cell.cellNumber)
+          : gridLayerRef.current.get(cell.cellNumber)
+
+        if (!rectangle) {
+          rectangle = new google.maps.Rectangle({
+            bounds: cell.bounds,
+            map,
+            fillColor: cell.isGoverned ? "green" : "transparent",
+            fillOpacity: cell.isGoverned ? 0.3 : 0,
+            strokeColor: cell.isGoverned ? "green" : "black",
+            strokeWeight: 1,
+            clickable: true,
+          })
+
+          rectangle.addListener("click", (e: google.maps.MapMouseEvent) => {
+            if (e.latLng) handleCellAction(cell.cellNumber, e.latLng)
+          })
+
+          if (cell.isGoverned) {
+            governedCellsLayerRef.current.set(cell.cellNumber, rectangle)
+          } else {
+            gridLayerRef.current.set(cell.cellNumber, rectangle)
+          }
+        } else {
+          rectangle.setOptions({
+            map,
+            bounds: cell.bounds,
+            fillColor: cell.isGoverned ? "green" : "transparent",
+            fillOpacity: cell.isGoverned ? 0.3 : 0,
+            strokeColor: cell.isGoverned ? "green" : "black",
+          })
+        }
+      })
+
+      // Remove cells that are no longer visible
+      gridLayerRef.current.forEach((rect, cellNumber) => {
+        if (!visibleCellNumbers.has(cellNumber)) {
+          rect.setMap(null)
+          gridLayerRef.current.delete(cellNumber)
+        }
+      })
+
+      governedCellsLayerRef.current.forEach((rect, cellNumber) => {
+        if (!visibleCellNumbers.has(cellNumber)) {
+          rect.setMap(null)
+          governedCellsLayerRef.current.delete(cellNumber)
+        }
+      })
+    }
+
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate()
+      }
+    }
+  }, [map, handleCellAction])
+
+  // Add event listener for navigation
   useEffect(() => {
     const handleNavigateToCell = (event: CustomEvent<{ cellNumber: number }>) => {
       navigateToCell(event.detail.cellNumber)
     }
 
-    window.addEventListener('navigateToCell', handleNavigateToCell as EventListener)
+    window.addEventListener("navigateToCell", handleNavigateToCell as EventListener)
 
     return () => {
-      window.removeEventListener('navigateToCell', handleNavigateToCell as EventListener)
+      window.removeEventListener("navigateToCell", handleNavigateToCell as EventListener)
     }
   }, [navigateToCell])
 
-  const handleSearch = useCallback(async (query: string) => {
-    try {
-      const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`)
-      if (!response.ok) {
-        throw new Error('Failed to search for cell')
+  const handleSearch = useCallback(
+    async (query: string) => {
+      try {
+        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`)
+        if (!response.ok) {
+          throw new Error("Failed to search for cell")
+        }
+        const data = await response.json()
+        if (data.cellNumber) {
+          const cellData: GridCell = data
+          if (cellData.coordinates && map) {
+            const cellCenter = new google.maps.LatLng(
+              (cellData.coordinates.latRange[0] + cellData.coordinates.latRange[1]) / 2,
+              (cellData.coordinates.lngRange[0] + cellData.coordinates.lngRange[1]) / 2,
+            )
+            map.panTo(cellCenter)
+            map.setZoom(18)
+            updateSelectedCellHighlight(cellData)
+            setSelectedCell(cellData)
+          }
+        } else {
+          toast.error("Bloco não encontrado")
+        }
+      } catch (error) {
+        console.error("Error searching for cell:", error)
+        toast.error("Erro ao buscar o bloco. Por favor, tente novamente.")
       }
-      const data = await response.json()
-      if (data.cellNumber) {
-        navigateToCell(data.cellNumber)
-      } else {
-        alert('Bloco não encontrado')
-      }
-    } catch (error) {
-      console.error('Error searching for cell:', error)
-      alert('Erro ao buscar o bloco. Por favor, tente novamente.')
-    }
-  }, [navigateToCell])
+    },
+    [map, updateSelectedCellHighlight],
+  )
+
+  const onMapLoad = useCallback(
+    (map: google.maps.Map) => {
+      setMap(map)
+      const boundaryPolygon = new google.maps.Polygon({
+        paths: saoPauloBoundaryPolygon.original.map((coord) => ({ lat: coord[1], lng: coord[0] })),
+        strokeColor: "black",
+        strokeWeight: 2,
+        fillOpacity: 0,
+      })
+      boundaryPolygon.setMap(map)
+    },
+    [saoPauloBoundaryPolygon.original],
+  )
+
+  if (!isLoaded) return <div>Carregando...</div>
 
   return (
     <div className="relative w-full h-full">
-      <div id="map" className="w-full h-full" />
-      {!mapReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-          <p className="text-xl font-semibold">Loading map...</p>
-        </div>
-      )}
+      <GoogleMap
+        mapContainerStyle={mapContainerStyle}
+        center={SAO_PAULO_CENTER}
+        zoom={INITIAL_ZOOM}
+        options={{
+          maxZoom: MAX_ZOOM,
+          streetViewControl: false,
+          mapTypeControl: false,
+        }}
+        onLoad={onMapLoad}
+        onZoomChanged={debouncedUpdateGrid}
+        onCenterChanged={debouncedUpdateGrid}
+      />
       <div className="absolute top-4 left-4 z-[1000] space-y-2">
         <SearchBar onSearch={handleSearch} />
-        <button
-          className="bg-white px-4 py-2 rounded shadow hover:bg-gray-100 transition-colors"
-          onClick={toggleGrid}
-        >
-          {showGrid ? 'Hide Grid' : 'Show Grid'}
+        <button className="bg-white px-4 py-2 rounded shadow hover:bg-gray-100 transition-colors" onClick={toggleGrid}>
+          {showGrid ? "Esconder Grid" : "Mostrar Grid"}
         </button>
         <button
           className="bg-white px-4 py-2 rounded shadow hover:bg-gray-100 transition-colors flex items-center justify-center w-full"
@@ -390,7 +440,7 @@ const SaoPauloMap = () => {
           disabled={isLocating}
         >
           <FaLocationArrow className="mr-2" />
-          {isLocating ? 'Locating...' : 'Find Me'}
+          {isLocating ? "Localizando..." : "Encontrar-me"}
         </button>
       </div>
       {selectedCell && (
