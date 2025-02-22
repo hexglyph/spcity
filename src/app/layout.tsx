@@ -4,10 +4,10 @@ import type React from "react"
 
 import "./globals.css"
 import { Inter } from "next/font/google"
-import { Providers } from "./components/Providers"
-import PlayerMenu from "./components/PlayerMenu"
-import LoadingScreen from "./components/LoadingScreen"
-import TopMenu from "./components/TopMenu"
+import { Providers } from "@/components/Providers"
+import PlayerMenu from "@/components/PlayerMenu"
+import LoadingScreen from "@/components/LoadingScreen"
+import TopMenu from "@/components/TopMenu"
 import { useState, useEffect } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -49,11 +49,10 @@ export default function RootLayout({
   }, [])
 
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <body className={inter.className}>
         <Providers>
           <TopMenu />
-          <LoadingScreen isLoading={isLoading} />
           <main className="pt-16">
             {" "}
             {/* Add padding-top to account for the fixed TopMenu */}
