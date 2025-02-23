@@ -57,7 +57,105 @@ Interacting with the government is often bureaucratic and demotivating for citiz
 ## 📋 Project Structure
 
 
+Copy markdown
+# SPCITY
 
+SPCITY is an application designed to facilitate the interaction between citizens and the São Paulo municipal government, promoting the registration, monitoring, and management of urban demands in a simplified, efficient, and transparent manner.
+
+## 📜 About the Project
+
+Interacting with the government is often bureaucratic and demotivating for citizens. SPCITY aims to revolutionize this environment, allowing users to report urban problems intuitively and track their resolutions in real time.
+
+### Main Features
+- Registration of urban demands using simplified geolocation.
+- Visualization of open demands on an interactive map.
+- Continuous feedback system.
+- Engagement incentives through gamification.
+- User-friendly and accessible interface.
+
+## 🚀 Technologies Used
+
+- **Frontend**: Next.js 15.
+- **Backend**: MongoDB and custom APIs.
+- **Geolocation**: Leaflet for rendering interactive maps.
+- **Authentication**: NextAuth with MongoDB adapter.
+- **Styling**: TailwindCSS with animation support.
+
+## 📦 Installation
+
+### Prerequisites
+- Node.js version 22 or higher (recommended for compatibility).
+- Configured and running MongoDB.
+
+### Step-by-Step
+
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/hexglyph/spcity.git
+    cd spcity
+    ```
+
+2. Install dependencies:
+    ```bash
+    bun install
+    ```
+
+3. Configure the environment variables:
+    Create a `.env` file at the root of the project and add the required variables, such as:
+    ```env
+    MONGODB_URI=mongodb+srv://your-username:password@cluster.mongodb.net/spcity
+    NEXTAUTH_SECRET=your_secret_key
+    ```
+
+4. Start the development server:
+    ```bash
+    bun run dev
+    ```
+
+5. Open the application in your browser at [http://localhost:3000](http://localhost:3000).
+
+## 📋 Project Structure
+
+spcity/ ├── public/                # Public files ├── src/                   # Main source code │   ├── pages/             # Next.js routes and pages │   ├── components/        # Reusable components │   ├── styles/            # Global styles │   ├── lib/               # Utility functions and configurations │   └── api/               # Custom APIs ├── .env                   # Environment variables ├── package.json           # Dependency manager configuration └── tailwind.config.js     # TailwindCSS configuration
+
+```
+spcity/
+├── public/                # Arquivos públicos
+├── src/                   # Código-fonte principal
+│   ├── pages/             # Rotas e páginas do Next.js
+│   ├── components/        # Componentes reutilizáveis
+│   ├── styles/            # Estilos globais
+│   ├── lib/               # Funções utilitárias e configurações
+│   └── api/               # APIs customizadas
+├── .env                   # Variáveis de ambiente
+├── package.json           # Gerenciador de dependências
+└── tailwind.config.js     # Configuração do TailwindCSS
+```
+
+Copy
+
+## 🎮 Gamification
+
+The application includes a gamification system that encourages continuous and responsible usage:
+- **Levels:** Based on user interaction.
+- **Ranking:** Qualitative evaluation of contributions.
+- **Educational Control:** Penalties for misuse of the system.
+
+## 🛡️ Privacy and Security
+
+- Personal data is anonymized and handled in accordance with LGPD.
+- All interactions occur over secure channels.
+
+## 🤝 Contributions
+
+Contributions are welcome! To collaborate:
+1. Fork the repository.
+2. Create a branch for your feature: `git checkout -b my-feature`.
+3. Submit a pull request for review.
+
+## 📝 License
+
+This project is proprietary. Usage, modification, or redistribution are permitted only with the author’s authorization.
 
 # SPCITY
 
