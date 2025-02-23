@@ -115,21 +115,18 @@ Interacting with the government is often bureaucratic and demotivating for citiz
 5. Open the application in your browser at [http://localhost:3000](http://localhost:3000).
 
 ## 📋 Project Structure
-
-spcity/ ├── public/                # Public files ├── src/                   # Main source code │   ├── pages/             # Next.js routes and pages │   ├── components/        # Reusable components │   ├── styles/            # Global styles │   ├── lib/               # Utility functions and configurations │   └── api/               # Custom APIs ├── .env                   # Environment variables ├── package.json           # Dependency manager configuration └── tailwind.config.js     # TailwindCSS configuration
-
 ```
-spcity/
-├── public/                # Arquivos públicos
-├── src/                   # Código-fonte principal
-│   ├── pages/             # Rotas e páginas do Next.js
-│   ├── components/        # Componentes reutilizáveis
-│   ├── styles/            # Estilos globais
-│   ├── lib/               # Funções utilitárias e configurações
-│   └── api/               # APIs customizadas
-├── .env                   # Variáveis de ambiente
-├── package.json           # Gerenciador de dependências
-└── tailwind.config.js     # Configuração do TailwindCSS
+spcity/ 
+├── public/                # Public files 
+├── src/                   # Main source code 
+│   ├── pages/             # Next.js routes and pages 
+│   ├── components/        # Reusable components 
+│   ├── styles/            # Global styles 
+│   ├── lib/               # Utility functions and configurations 
+│   └── api/               # Custom APIs 
+├── .env                   # Environment variables 
+├── package.json           # Dependency manager configuration 
+└── tailwind.config.js     # TailwindCSS configuration
 ```
 
 Copy
