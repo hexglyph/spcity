@@ -1,6 +1,4 @@
-import Link from 'next/link'
 import MapWrapper from '@/components/MapWrapper'
-import FooterLinks from '@/components/FooterLinks'
 
 export default function Home() {
   return (
