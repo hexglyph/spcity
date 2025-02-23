@@ -1,26 +1,29 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
   reactStrictMode: true,
-  webpack: (config, { isServer }) => {
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
     if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
+      config.resolve = {
+        ...config.resolve,
+        fallback: {
+          fs: false,
+          net: false,
+          tls: false,
+        },
       }
     }
-    config.module.rules.push({
+    config.module!.rules.push({
       test: /\.worker\.ts$/,
-      loader: "worker-loader",
+      loader: 'worker-loader',
       options: {
-        filename: "static/[hash].worker.js",
-        publicPath: "/_next/",
+        filename: 'static/[hash].worker.js',
+        publicPath: '/_next/',
       },
     })
     return config
   },
 }
 
-module.exports = nextConfig
-
+export default nextConfig
