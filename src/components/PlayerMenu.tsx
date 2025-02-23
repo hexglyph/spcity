@@ -52,7 +52,7 @@ export default function PlayerMenu() {
     if (!session) {
         return (
             <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex justify-between items-center z-[9999]">
-                <div className="text-xl font-bold">{`:)`}</div>
+                <div className="text-xl font-bold">{`O SPCity é um aplicativo desenvolvido para facilitar a comunicação entre os cidadãos de São Paulo e a administração municipal. Com ele, você pode registrar demandas, acompanhar solicitações e receber atualizações em tempo real sobre os serviços públicos da cidade.`}</div>
                 <div>
                     <button onClick={() => signIn('google')} className="bg-red-600 text-white px-4 py-2 rounded mr-2 hover:bg-red-700 transition-colors">
                         Entrar com Google
