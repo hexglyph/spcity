@@ -33,8 +33,6 @@ function calculateVisibleCells(
     const cells: any[] = []
     const turfPolygon = turf.polygon([saoPauloBoundary])
 
-    console.log("Worker: Calculating visible cells with governed cells:", governedCells)
-
     for (let i = 0; i <= cellsY; i++) {
         for (let j = 0; j <= cellsX; j++) {
             const cellLat = startLat + i * GRID_SIZE_DEGREES
@@ -46,7 +44,7 @@ function calculateVisibleCells(
                 const isGoverned = governedCells.includes(cellNumber)
 
                 if (isGoverned) {
-                    console.log("Worker: Found governed cell:", cellNumber)
+                    console.debug("Found governed cell:", cellNumber)
                 }
 
                 if (isGoverned || (showGrid && zoom >= 18)) {

@@ -114,7 +114,6 @@ const SaoPauloMap = () => {
   }, [])
 
   const updateGrid = useCallback(() => {
-    console.log("Updating grid with governed cells:", governedCells)
     if (!map || !workerRef.current) return
 
     const bounds = map.getBounds()
@@ -124,6 +123,8 @@ const SaoPauloMap = () => {
     const ne = bounds.getNorthEast()
     const sw = bounds.getSouthWest()
     const center = map.getCenter()
+
+    if (!ne || !sw || !center) return
 
     workerRef.current.postMessage({
       bounds: {
@@ -141,7 +142,7 @@ const SaoPauloMap = () => {
       saoPauloBoundary: saoPauloBoundaryPolygon.simplified,
       showGrid,
     })
-  }, [map, governedCells, saoPauloBoundaryPolygon, showGrid])
+  }, [map, governedCells, saoPauloBoundaryPolygon.simplified, showGrid])
 
   const fetchGovernedCells = useCallback(async () => {
     if (!session?.user?.id) return
@@ -266,12 +267,29 @@ const SaoPauloMap = () => {
 
   useEffect(() => {
     if (session?.user?.id) {
+      const storedCells = localStorage.getItem("governedCells")
+      const storedTimestamp = localStorage.getItem("governedCellsTimestamp")
+
+      if (storedCells && storedTimestamp) {
+        const parsedCells = JSON.parse(storedCells)
+        const timestamp = Number.parseInt(storedTimestamp, 10)
+
+        // Check if the stored data is less than 15 minutes old
+        if (Date.now() - timestamp < 15 * 60 * 1000) {
+          console.log("Using stored governed cells:", parsedCells)
+          const cellNumbers = parsedCells.map((cell: any) => cell.cellNumber)
+          setGovernedCells(cellNumbers)
+          return
+        }
+      }
+
       fetchGovernedCells().then((cells) => {
-        setGovernedCells(cells)
-        updateGrid()
+        if (cells) {
+          setGovernedCells(cells)
+        }
       })
     }
-  }, [session?.user?.id, fetchGovernedCells, updateGrid])
+  }, [session?.user?.id, fetchGovernedCells])
 
   useEffect(() => {
     if (map) {
@@ -410,6 +428,21 @@ const SaoPauloMap = () => {
     },
     [saoPauloBoundaryPolygon.original],
   )
+
+  useEffect(() => {
+    if (!map) return
+
+    const debouncedUpdate = debounce(updateGrid, 500)
+
+    const zoomListener = map.addListener("zoom_changed", debouncedUpdate)
+    const centerListener = map.addListener("center_changed", debouncedUpdate)
+
+    return () => {
+      google.maps.event.removeListener(zoomListener)
+      google.maps.event.removeListener(centerListener)
+      debouncedUpdate.cancel()
+    }
+  }, [map, updateGrid])
 
   if (!isLoaded) return <div>Carregando...</div>
 
