@@ -57,14 +57,14 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
                         Nome
                     </h3>
                     <p className="text-lg font-medium">{getLocalizedName()}</p>
-                    <div className="mt-2 text-sm text-gray-300">
+                    {/*<div className="mt-2 text-sm text-gray-300">
                         <p>ID: {cellData?._id?.toString()}</p>
                         <p>Número do Bloco: {cellNumber}</p>
-                    </div>
+                    </div>*/}
                 </div>
 
                 {cellData && <GovernancePanel
-                    cellId={cellData._id?.toString() || ''}
+                    cellId={/*cellData._id?.toString() ||*/ ''}
                     governance={cellData.governance}
                 />}
 
@@ -84,7 +84,7 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
                     <p className="text-lg italic text-gray-400">Em breve</p>
                 </div>
 
-                <div className="bg-gray-700 p-4 rounded-lg">
+                {/*<div className="bg-gray-700 p-4 rounded-lg">
                     <h3 className="text-xl font-semibold mb-2">Coordenadas</h3>
                     {cellData?.coordinates ? (
                         <>
@@ -106,7 +106,7 @@ const CellMenu: React.FC<CellMenuProps> = ({ cellNumber, cellData, onClose }) =>
                     ) : (
                         <p className="text-sm italic text-gray-400">Coordenadas não disponíveis</p>
                     )}
-                </div>
+                </div>*/}
             </div>
             <button
                 className="mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"

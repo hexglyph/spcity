@@ -46,19 +46,16 @@ export default function PlayerMenu() {
     }
 
     if (status === 'loading') {
-        return <div>Loading...</div>
+        return <div>Carregando...</div>
     }
 
     if (!session) {
         return (
             <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white p-4 flex justify-between items-center z-[9999]">
-                <div className="text-xl font-bold">SPCity</div>
+                <div className="text-xl font-bold">{`:)`}</div>
                 <div>
                     <button onClick={() => signIn('google')} className="bg-red-600 text-white px-4 py-2 rounded mr-2 hover:bg-red-700 transition-colors">
-                        Login with Google
-                    </button>
-                    <button onClick={() => signIn('apple')} className="bg-gray-200 text-black px-4 py-2 rounded hover:bg-gray-300 transition-colors">
-                        Login with Apple
+                        Entrar com Google
                     </button>
                 </div>
             </div>
@@ -108,7 +105,7 @@ export default function PlayerMenu() {
                 </div>
                 <div className="flex items-center space-x-4">
                     <div className="text-sm">
-                        <div>XP: {playerData?.experience || 0}</div>
+                        <div>Experiência: {playerData?.experience || 0}</div>
                         <div>Rank: {playerData?.rank || 'Bronze 3'}</div>
                     </div>
                     <button
@@ -123,10 +120,10 @@ export default function PlayerMenu() {
                         className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors flex items-center"
                     >
                         <FaMapMarkedAlt className="mr-2" />
-                        Território
+                        Territórios
                     </button>
                     <button onClick={() => signOut()} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">
-                        Logout
+                        Sair
                     </button>
                 </div>
             </div>

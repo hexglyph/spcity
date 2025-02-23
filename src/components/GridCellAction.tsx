@@ -16,7 +16,7 @@ const GridCellAction: React.FC<GridCellActionProps> = ({ x, y, onAction }) => {
                 className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onClick={() => onAction(x, y)}
             >
-                Interact with cell
+                Interagir com o bloco
             </button>
         </div>
     );

@@ -97,8 +97,8 @@ export default function TerritoryList({ onClose }: TerritoryListProps) {
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <h3 className="text-lg font-semibold text-gray-800">{cell.name}</h3>
-                                        <p className="text-sm text-gray-600">Expira em: {new Date(cell.expiresAt).toLocaleDateString()}</p>
-                                        <p className="text-xs text-gray-500">Cell Number: {cell.cellNumber}</p>
+                                        <p className="text-sm text-gray-600">Seu governo sobre esse bloco acaba em: {new Date(cell.expiresAt).toLocaleDateString()}</p>
+                                        { /*<p className="text-xs text-gray-500">Cell Number: {cell.cellNumber}</p>*/}
                                     </div>
                                     <button
                                         title="Ver detalhes"
