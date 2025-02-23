@@ -160,6 +160,7 @@ Todo:
 - Definir Base de Dados
 - Implementar Backoffice para a Administração Pública
 - Tailwind 4
+- Implementar Modelo de Filtragem de Demandas
 
 **Contato:**
 - Email: me@danielniebraz.dev
